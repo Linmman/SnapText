@@ -18,6 +18,7 @@ internal partial class SettingsWindow : Window
 
         GrabHotkeyBox.Text = settings.GrabHotkey;
         RepeatHotkeyBox.Text = settings.RepeatHotkey;
+        BurstHotkeyBox.Text = settings.BurstHotkey;
         LinkOpenerBox.Text = settings.LinkOpener;
         EngineCombo.SelectedIndex = settings.Engine?.ToLowerInvariant() switch
         {
@@ -35,6 +36,7 @@ internal partial class SettingsWindow : Window
     {
         var grabHotkey = GrabHotkeyBox.Text.Trim();
         var repeatHotkey = RepeatHotkeyBox.Text.Trim();
+        var burstHotkey = BurstHotkeyBox.Text.Trim();
 
         // 留空 = 关闭该热键（合法），只有填了内容才校验格式
         if (!HotkeyService.IsDisabled(grabHotkey) && !HotkeyService.TryParse(grabHotkey, out _, out _, out var grabError))
@@ -49,8 +51,15 @@ internal partial class SettingsWindow : Window
             return;
         }
 
+        if (!HotkeyService.IsDisabled(burstHotkey) && !HotkeyService.TryParse(burstHotkey, out _, out _, out var burstError))
+        {
+            MessageBox.Show(this, "连拍取字热键无效：" + burstError, "SnapText", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         _settings.GrabHotkey = grabHotkey;
         _settings.RepeatHotkey = repeatHotkey;
+        _settings.BurstHotkey = burstHotkey;
         _settings.LinkOpener = LinkOpenerBox.Text.Trim();
         _settings.Engine = EngineCombo.SelectedIndex switch
         {

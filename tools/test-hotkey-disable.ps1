@@ -37,7 +37,7 @@ if ($hadConfig) { Copy-Item $cfg $backup -Force }
 try {
     New-Item -ItemType Directory -Force -Path (Split-Path $cfg) | Out-Null
     @'
-{ "GrabHotkey": "Ctrl+Alt+Q", "RepeatHotkey": "", "LinkOpener": "", "Engine": "auto", "SilentCopy": true, "MergeLines": true, "AutoStart": false, "SaveCapture": false }
+{ "GrabHotkey": "Ctrl+Alt+Q", "RepeatHotkey": "", "BurstHotkey": "", "LinkOpener": "", "Engine": "auto", "SilentCopy": true, "MergeLines": true, "AutoStart": false, "SaveCapture": false }
 '@ | Set-Content -Encoding UTF8 -NoNewline $cfg
 
     $offset = 0

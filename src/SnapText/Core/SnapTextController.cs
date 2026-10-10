@@ -38,6 +38,7 @@ internal sealed class SnapTextController : IDisposable
     private EventWaitHandle? _grabSignal;
     private Thread? _signalThread;
     private volatile bool _disposed;
+    private bool _burstAfterSelection;
 
     public SnapTextController()
     {
@@ -47,7 +48,7 @@ internal sealed class SnapTextController : IDisposable
 
     public void Start()
     {
-        _tray = new TrayHost(Grab, RepeatLast, ShowSettings, Exit);
+        _tray = new TrayHost(Grab, RepeatLast, GrabBurst, ShowSettings, Exit);
         ApplySettings();
         StartSignalListener();
 
@@ -59,15 +60,9 @@ internal sealed class SnapTextController : IDisposable
         }
         else
         {
-            var hints = new List<string>();
-            if (!HotkeyService.IsDisabled(_settings.GrabHotkey))
-                hints.Add($"按 {_settings.GrabHotkey} 框选取字");
-            if (!HotkeyService.IsDisabled(_settings.RepeatHotkey))
-                hints.Add($"{_settings.RepeatHotkey} 重复上次区域");
-
-            var body = hints.Count > 0
-                ? string.Join(" · ", hints) + " · 托盘图标右键可设置/退出"
-                : "两个热键都已关闭 · 托盘图标左键取字 / 右键设置";
+            var body = HotkeyService.IsDisabled(_settings.GrabHotkey)
+                ? "热键已关闭 · 托盘图标左键取字 / 右键菜单"
+                : $"按 {_settings.GrabHotkey} 框选取字 · 其余功能在托盘图标右键菜单";
             ToastService.Show("SnapText 已启动", body);
         }
     }
@@ -80,6 +75,8 @@ internal sealed class SnapTextController : IDisposable
         if (!_hotkeys.Register(_settings.GrabHotkey, Grab, out var error))
             ToastService.Show("热键注册失败", error);
         if (!_hotkeys.Register(_settings.RepeatHotkey, RepeatLast, out error))
+            ToastService.Show("热键注册失败", error);
+        if (!_hotkeys.Register(_settings.BurstHotkey, GrabBurst, out error))
             ToastService.Show("热键注册失败", error);
 
         AutoStart.Apply(_settings.AutoStart);
@@ -161,7 +158,20 @@ internal sealed class SnapTextController : IDisposable
 
         if (rect is null || capture is null)
         {
+            _burstAfterSelection = false;   // 用户取消了框选
             overlay.Dispose();
+            return;
+        }
+
+        _lastRect = rect.Value;
+        _hasLastRect = true;
+
+        if (_burstAfterSelection)   // 连拍热键触发的框选：框完直接连拍（重新抓活动帧，不用冻结帧）
+        {
+            _burstAfterSelection = false;
+            overlay.Dispose();
+            Log.Info($"Burst after selection: {rect.Value}");
+            _ = RunBurstAsync(rect.Value);
             return;
         }
 
@@ -179,10 +189,67 @@ internal sealed class SnapTextController : IDisposable
 
         if (crop is null) return;
 
-        _lastRect = rect.Value;
-        _hasLastRect = true;
-
         _ = ProcessAsync(crop, rect.Value, restoreFocus: true);
+    }
+
+    /// <summary>热键：连拍取字。有上次区域就直接连拍；没有则先框选，框完自动连拍。</summary>
+    private void GrabBurst()
+    {
+        try
+        {
+            if (_overlay is not null)
+            {
+                _burstAfterSelection = false;
+                _overlay.Cancel();
+                return;
+            }
+
+            if (_hasLastRect)
+            {
+                Log.Info($"Burst on last region: {_lastRect}");
+                _ = RunBurstAsync(_lastRect);
+                return;
+            }
+
+            Log.Info("Burst: no previous region; selecting one first.");
+            _burstAfterSelection = true;
+            Grab();
+        }
+        catch (Exception ex)
+        {
+            Log.Error("GrabBurst failed", ex);
+        }
+    }
+
+    /// <summary>连拍多帧选最优（视频播放中取字的模式，比单帧慢一点但更稳）。</summary>
+    private async Task RunBurstAsync(Rectangle region)
+    {
+        try
+        {
+            ToastService.Show("连拍取字…", "连续采样多帧，完成后自动进剪贴板", region);
+
+            var started = Environment.TickCount64;
+            var outcome = await BurstRunner.RunAsync(region, _ocr);
+            var text = UrlHelper.Normalize(PostProcessor.Clean(outcome.Text, _settings.MergeLines));
+            var elapsed = Environment.TickCount64 - started;
+
+            Log.Info(
+                $"Burst done in {elapsed} ms: frames={outcome.InputFrames} ocr={outcome.OcrFrames} " +
+                $"agree={outcome.AgreementCount} chars={text.Length} conf={outcome.Confidence?.ToString("F3") ?? "n/a"}");
+
+            if (text.Length == 0)
+            {
+                ToastService.Show("未识别到文字", "连拍也没抓到文字：把区域框得更紧凑，或等画面稳一点再试。", region);
+                return;
+            }
+
+            ShowResult(text, region, isCode: false, lowConfidence: outcome.Confidence is { } c && c < LowConfidenceThreshold);
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Burst failed", ex);
+            ToastService.Show("连拍取字失败", ex.Message, region);
+        }
     }
 
     /// <summary>热键：不框选，直接对上次区域重新取字（视频字幕场景）。</summary>

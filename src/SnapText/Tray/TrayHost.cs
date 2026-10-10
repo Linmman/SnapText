@@ -13,7 +13,7 @@ internal sealed class TrayHost : IDisposable
     private static Icon? _iconKeepAlive;
     private readonly TaskbarIcon _taskbarIcon;
 
-    public TrayHost(Action onGrab, Action onRepeatLast, Action onSettings, Action onExit)
+    public TrayHost(Action onGrab, Action onRepeatLast, Action onBurst, Action onSettings, Action onExit)
     {
         _iconKeepAlive ??= CreateTrayIcon();
 
@@ -26,6 +26,7 @@ internal sealed class TrayHost : IDisposable
         var menu = new ContextMenu();
         menu.Items.Add(CreateMenuItem("取字", onGrab));
         menu.Items.Add(CreateMenuItem("重复上次区域", onRepeatLast));
+        menu.Items.Add(CreateMenuItem("连拍取字", onBurst));
         menu.Items.Add(new Separator());
         menu.Items.Add(CreateMenuItem("设置…", onSettings));
         menu.Items.Add(new Separator());

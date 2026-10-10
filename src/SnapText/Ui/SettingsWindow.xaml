@@ -10,6 +10,8 @@
 
         <TextBlock Text="快捷键（示例：Ctrl+Alt+Q，支持 A-Z / 0-9 / F1-F12；留空 = 关闭该快捷键）"
                    FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
+        <TextBlock Text="「连拍取字」用于视频播放中取字：连抓几帧选最干净的一帧，比单帧慢约半秒。"
+                   Foreground="#FF6B6B6B" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap" />
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -19,15 +21,20 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Grid.Column="0" Text="取字" VerticalAlignment="Center" Margin="0,0,0,8" />
             <TextBox x:Name="GrabHotkeyBox" Grid.Row="0" Grid.Column="1" Height="26" Margin="0,0,0,8" VerticalContentAlignment="Center"
                      AutomationProperties.Name="取字热键" />
 
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="重复上次区域" VerticalAlignment="Center" />
-            <TextBox x:Name="RepeatHotkeyBox" Grid.Row="1" Grid.Column="1" Height="26" VerticalContentAlignment="Center"
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="重复上次区域" VerticalAlignment="Center" Margin="0,0,0,8" />
+            <TextBox x:Name="RepeatHotkeyBox" Grid.Row="1" Grid.Column="1" Height="26" Margin="0,0,0,8" VerticalContentAlignment="Center"
                      AutomationProperties.Name="重复上次区域热键" />
+
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="连拍取字" VerticalAlignment="Center" />
+            <TextBox x:Name="BurstHotkeyBox" Grid.Row="2" Grid.Column="1" Height="26" VerticalContentAlignment="Center"
+                     AutomationProperties.Name="连拍取字热键" />
         </Grid>
 
         <TextBlock Text="识别引擎" FontWeight="SemiBold" Margin="0,16,0,8" />

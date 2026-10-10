@@ -46,6 +46,9 @@ internal static class CliRunner
             case "--scan":
                 exitCode = RunScan(args);
                 return true;
+            case "--ocr-burst":
+                exitCode = RunOcrBurst(args);
+                return true;
             case "--qr":
                 exitCode = RunQr(args);
                 return true;
@@ -59,7 +62,7 @@ internal static class CliRunner
 
     private static int RunOcr(string[] args)
     {
-        var path = args.Skip(1).FirstOrDefault(a => !a.StartsWith("--"));
+        var path = GetPositional(args, "--out", "--engine").FirstOrDefault();
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
         {
             Print("用法: SnapText.exe --ocr <图片路径> [--engine auto|ppocr|windows] [--out <输出文本路径>] [--no-merge]");
@@ -183,7 +186,7 @@ internal static class CliRunner
     /// <summary>对屏幕固定区域取字：截屏 → OCR → 剪贴板（可脚本化的固定区域取字）。</summary>
     private static int RunGrabRegion(string[] args)
     {
-        var spec = args.Skip(1).FirstOrDefault(a => !a.StartsWith("--"));
+        var spec = GetPositional(args, "--out", "--engine").FirstOrDefault();
         if (string.IsNullOrEmpty(spec))
         {
             Print("用法: SnapText.exe --grab-region <x,y,w,h> [--engine auto|ppocr|windows] [--out <文本.txt>] [--no-copy] [--no-merge]");
@@ -232,10 +235,66 @@ internal static class CliRunner
         }
     }
 
+    /// <summary>
+    /// 对多张图跑"连拍选优"逻辑：逐帧 OCR → 按置信度/完整度打分 → 输出最优的一帧文本。
+    /// 与托盘里的连拍取字共用同一套逻辑，便于自动化验证。
+    /// </summary>
+    private static int RunOcrBurst(string[] args)
+    {
+        var paths = GetPositional(args, "--out", "--engine").ToArray();
+        if (paths.Length == 0)
+        {
+            Print("用法: SnapText.exe --ocr-burst <图1> [图2 ...] [--engine auto|ppocr|windows] [--out <文本.txt>]");
+            return 2;
+        }
+
+        var merge = !args.Contains("--no-merge", StringComparer.OrdinalIgnoreCase);
+        var outPath = GetOption(args, "--out");
+        var engineName = GetOption(args, "--engine") ?? "auto";
+
+        var bitmaps = new List<Bitmap>();
+        try
+        {
+            foreach (var path in paths)
+            {
+                if (!File.Exists(path)) { Print($"FAILED: 找不到 {path}"); return 2; }
+                bitmaps.Add(new Bitmap(path));
+            }
+
+            var settings = new AppSettings { Engine = engineName };
+            using var ocr = new OcrService(settings);
+
+            var started = Environment.TickCount64;
+            var outcome = Task.Run(() => BurstRunner.SelectBestAsync(bitmaps, ocr)).GetAwaiter().GetResult();
+            var elapsed = Environment.TickCount64 - started;
+            var text = UrlHelper.Normalize(PostProcessor.Clean(outcome.Text, merge));
+
+            if (!string.IsNullOrEmpty(outPath))
+                File.WriteAllText(outPath!, text, new UTF8Encoding(false));
+
+            Print($"frames={outcome.InputFrames} ocr={outcome.OcrFrames} agree={outcome.AgreementCount} " +
+                  $"elapsed={elapsed}ms chars={text.Length} conf={FormatConfidence(outcome.Confidence)}");
+            if (string.IsNullOrEmpty(outPath))
+                Print(text);
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Log.Error("CLI --ocr-burst failed", ex);
+            Print("FAILED: " + ex.Message);
+            return 1;
+        }
+        finally
+        {
+            foreach (var bitmap in bitmaps)
+                bitmap.Dispose();
+        }
+    }
+
     /// <summary>识别图片里的二维码/条码，输出其内容（可用于脚本）。</summary>
     private static int RunScan(string[] args)
     {
-        var path = args.Skip(1).FirstOrDefault(a => !a.StartsWith("--"));
+        var path = GetPositional(args, "--out").FirstOrDefault();
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
         {
             Print("用法: SnapText.exe --scan <图片路径> [--out <内容.txt>]");
@@ -273,7 +332,7 @@ internal static class CliRunner
     /// <summary>把文本生成二维码 PNG（顺手提供的小工具，也用于自测）。</summary>
     private static int RunQr(string[] args)
     {
-        var text = args.Skip(1).FirstOrDefault(a => !a.StartsWith("--"));
+        var text = GetPositional(args, "--out", "--size").FirstOrDefault();
         if (string.IsNullOrEmpty(text))
         {
             Print("用法: SnapText.exe --qr <文本> [--out <二维码.png>] [--size 300]");
@@ -309,6 +368,29 @@ internal static class CliRunner
             Print("FAILED: " + ex.Message);
             return 1;
         }
+    }
+
+    /// <summary>
+    /// 取位置参数（跳过 --flag 以及带取值的 --flag 的取值）。
+    /// 之前用「第一个不以 -- 开头」的做法，会把 --out 的文件名误当成输入。
+    /// </summary>
+    private static List<string> GetPositional(string[] args, params string[] valueFlags)
+    {
+        var flags = new HashSet<string>(valueFlags, StringComparer.OrdinalIgnoreCase);
+        var result = new List<string>();
+
+        for (var i = 1; i < args.Length; i++)
+        {
+            if (args[i].StartsWith("--"))
+            {
+                if (flags.Contains(args[i]))
+                    i++;   // 跳过该选项的取值
+                continue;
+            }
+            result.Add(args[i]);
+        }
+
+        return result;
     }
 
     private static string FormatConfidence(double? confidence) =>

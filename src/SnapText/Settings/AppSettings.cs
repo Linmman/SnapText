@@ -8,6 +8,9 @@ internal sealed class AppSettings
     /// <summary>重复上次区域热键（留空 = 关闭该热键）。</summary>
     public string RepeatHotkey { get; set; } = "Ctrl+Alt+R";
 
+    /// <summary>连拍取字热键（留空 = 关闭该热键）。对上次区域连拍多帧、选最稳的一帧。</summary>
+    public string BurstHotkey { get; set; } = "Ctrl+Alt+B";
+
     /// <summary>打开链接用的程序（留空 = 系统默认浏览器）。填 exe 路径，链接会作为参数传入。</summary>
     public string LinkOpener { get; set; } = "";
 
