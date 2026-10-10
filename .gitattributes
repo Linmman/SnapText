@@ -1,0 +1,18 @@
+# 统一换行符处理，避免 Windows/Linux 混合提交产生噪音
+* text=auto
+
+# C# / XAML / 脚本：仓库内统一 LF，检出一致即可
+*.cs    text
+*.xaml  text
+*.csproj text
+*.slnx  text
+*.ps1   text
+*.md    text
+
+# 二进制文件：不要做任何转换
+*.onnx  binary
+*.ico   binary
+*.png   binary
+*.jpg   binary
+*.7z    binary
+*.zip   binary

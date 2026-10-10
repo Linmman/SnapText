@@ -1,0 +1,22 @@
+# 构建产物
+bin/
+obj/
+dist/
+
+# 测试产物：包含真实屏幕截图（隐私！），绝不提交
+tests/artifacts/
+
+# 编辑器 / IDE
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+
+# 系统
+Thumbs.db
+Desktop.ini
+*.lnk
+
+# 日志
+*.log

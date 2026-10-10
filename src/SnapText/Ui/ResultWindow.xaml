@@ -1,0 +1,30 @@
+﻿<Window x:Class="SnapText.Ui.ResultWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SnapText 识别结果"
+        Width="580" Height="320"
+        MinWidth="360" MinHeight="200"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True">
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="识别结果（可直接编辑，改完点“复制并关闭”）"
+                   Foreground="#FF6B6B6B" FontSize="12" Margin="2,0,0,6" />
+
+        <TextBox x:Name="ResultBox" Grid.Row="1"
+                 AcceptsReturn="True" TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"
+                 FontSize="14" Padding="6" />
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="复制并关闭" Width="120" Height="30" Margin="0,0,8,0" Click="OnCopyClick" IsDefault="True" />
+            <Button Content="关闭" Width="80" Height="30" Click="OnCloseClick" IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</Window>
