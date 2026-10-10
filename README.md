@@ -1,4 +1,4 @@
-# SnapText — grab any text on screen
+﻿# SnapText — grab any text on screen
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -37,13 +37,12 @@ Windows may show a SmartScreen warning the first time (the app is not code-signe
 
 1. Run `SnapText.exe` — a blue **字** icon appears in the tray.
 2. Press `Ctrl+Alt+Q`, drag around the text, release. Done — paste with `Ctrl+V`.
-3. Right-click the tray icon for the menu (repeat last region, burst grab, **recent grabs**, Settings); left-click to grab again.
+3. Right-click the tray icon for the menu (repeat last region, **recent grabs**, Settings); left-click to grab again.
 
 | Hotkey | What it does |
 |---|---|
-| `Ctrl+Alt+Q` | Grab: freeze the screen, drag a box, text goes to the clipboard |
+| `Ctrl+Alt+Q` | Grab: freeze the screen, drag a box, text goes to the clipboard. If the picture is moving (a playing video), several frames are sampled automatically and the cleanest one is used |
 | `Ctrl+Alt+R` | Re-grab the **same region** you used last (no dragging — for a fixed subtitle position) |
-| `Ctrl+Alt+B` | **Burst grab**: samples several frames and keeps the cleanest one — for text that is moving (a playing video). About half a second slower |
 | Tray left-click | Same as `Ctrl+Alt+Q` |
 | `Esc` / right-click | Cancel the selection |
 
@@ -51,7 +50,7 @@ Every hotkey can be changed, or cleared to disable it entirely, in **Settings** 
 
 ## What it can do
 
-- **Grab with one hotkey** — freeze the screen first, so selecting is not a race against a moving video. Focus returns to your window when it is done.
+- **Grab with one hotkey** — freeze the screen first, so selecting is not a race against a moving video; focus returns to your window when it is done. A still picture is read at single-frame speed, and a moving one is sampled over several frames so a mid-transition blur cannot win.
 - **Copy that does not lie** — the write is retried and read back; if it fails you are told, instead of seeing "copied" and pasting nothing.
 - **Recent grabs, one click away** — every grab (burst and QR included) is remembered in a local file (last 200, consecutive duplicates collapsed). Tray right-click → **Recent grabs** lists the latest 15; click one to put it back on the clipboard, or pick **Search history…** for a small searchable panel (it opens only when you ask — nothing ever pops up on its own). The history can be turned off or cleared from the same menu.
 - **Speaks your language** — the tray menu, notifications, settings, result window and selection hint come in Chinese, Japanese or English. It follows your Windows language out of the box, and switching in Settings takes effect right away.
@@ -68,6 +67,7 @@ Handy for scripts, launchers and AutoHotkey. `SnapText.exe --help` is not implem
 ```powershell
 SnapText.exe --grab                                        # trigger a grab in the running instance
 SnapText.exe --grab-region 100,900,1200,200 --out r.txt    # grab a fixed region (subtitle strip)
+SnapText.exe --ocr-adaptive 100,900,1200,200 --out r.txt   # same, with multi-frame picking for moving text
 SnapText.exe --ocr shot.png --engine ppocr --out r.txt     # OCR a file (no tray needed)
 SnapText.exe --scan qr.png                                 # decode a QR / barcode
 SnapText.exe --qr "https://example.com" --out qr.png       # generate a QR code
@@ -94,7 +94,6 @@ See **[docs/Troubleshooting.md](docs/Troubleshooting.md)** (Chinese) — it cove
 - Selection highlighting is complete only on the monitor where you start dragging (the captured data is correct either way).
 - Nothing works while the desktop is locked (Windows behaviour, not specific to this tool).
 - Stylised fonts, very low contrast and text covered by moving overlays can still defeat the OCR.
-- Burst grab does not save screenshots.
 
 ## Contributing
 

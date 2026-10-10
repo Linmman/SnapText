@@ -18,6 +18,7 @@ namespace SnapText.Cli;
 /// 无界面命令行模式（文案随界面语言/系统语言，SNAPTEXT_LANG 可强制）：
 ///   SnapText.exe --ocr &lt;图片&gt; [--out 文本.txt] [--no-merge]
 ///   SnapText.exe --capture [--out 截图.png]
+///   SnapText.exe --ocr-adaptive &lt;x,y,w,h&gt;（对屏幕区域做自适应多帧取字，供脚本/测试）
 ///   SnapText.exe --history list|search|add|clear（取字历史，供脚本/测试）
 ///   SnapText.exe --loc check（校验三语言文案表键集合一致）
 ///   SnapText.exe --version
@@ -51,6 +52,9 @@ internal static class CliRunner
                 return true;
             case "--ocr-burst":
                 exitCode = RunOcrBurst(args);
+                return true;
+            case "--ocr-adaptive":
+                exitCode = RunOcrAdaptive(args);
                 return true;
             case "--qr":
                 exitCode = RunQr(args);
@@ -297,6 +301,57 @@ internal static class CliRunner
         {
             foreach (var bitmap in bitmaps)
                 bitmap.Dispose();
+        }
+    }
+
+    /// <summary>对屏幕固定区域做「自适应多帧取字」：画面静止只识别一帧，画面在动则多帧选优（供脚本与自动化验证）。</summary>
+    private static int RunOcrAdaptive(string[] args)
+    {
+        var spec = GetPositional(args, "--out", "--engine").FirstOrDefault();
+        if (string.IsNullOrEmpty(spec))
+        {
+            Print(Loc.T("Cli_Usage_OcrAdaptive"));
+            return 2;
+        }
+
+        var parts = spec.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 4 || !parts.All(p => int.TryParse(p, out _)))
+        {
+            Print(Loc.T("Cli_BadRegion"));
+            return 2;
+        }
+
+        var rect = new Rectangle(int.Parse(parts[0]), int.Parse(parts[1]), int.Parse(parts[2]), int.Parse(parts[3]));
+        var merge = !args.Contains("--no-merge", StringComparer.OrdinalIgnoreCase);
+        var copy = !args.Contains("--no-copy", StringComparer.OrdinalIgnoreCase);
+        var outPath = GetOption(args, "--out");
+        var engineName = GetOption(args, "--engine") ?? "auto";
+
+        try
+        {
+            var settings = new AppSettings { Engine = engineName };
+            using var ocr = new OcrService(settings);
+
+            var started = Environment.TickCount64;
+            var outcome = Task.Run(() => BurstRunner.RunAdaptiveAsync(rect, ocr)).GetAwaiter().GetResult();
+            var elapsed = Environment.TickCount64 - started;
+            var text = UrlHelper.Normalize(PostProcessor.Clean(outcome.Text, merge));
+
+            var copied = copy && ClipboardService.TrySetText(text);
+            if (!string.IsNullOrEmpty(outPath))
+                File.WriteAllText(outPath!, text, new UTF8Encoding(false));
+
+            Print($"frames={outcome.InputFrames} ocr={outcome.OcrFrames} agree={outcome.AgreementCount} " +
+                  $"elapsed={elapsed}ms chars={text.Length} copied={copied} conf={FormatConfidence(outcome.Confidence)}");
+            if (string.IsNullOrEmpty(outPath))
+                Print(text);
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Log.Error("CLI --ocr-adaptive failed", ex);
+            Print("FAILED: " + ex.Message);
+            return 1;
         }
     }
 

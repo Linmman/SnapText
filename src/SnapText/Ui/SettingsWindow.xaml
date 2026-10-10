@@ -21,7 +21,7 @@
                    Margin="0,4,0,0" TextWrapping="Wrap" />
 
         <TextBlock Text="{loc:Loc Settings_HotkeysHint}" FontWeight="SemiBold" Margin="0,16,0,8" TextWrapping="Wrap" />
-        <TextBlock Text="{loc:Loc Settings_BurstHint}"
+        <TextBlock Text="{loc:Loc Settings_AdaptiveHint}"
                    Foreground="#FF6B6B6B" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap" />
 
         <Grid>
@@ -30,7 +30,6 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -43,9 +42,6 @@
             <TextBox x:Name="RepeatHotkeyBox" Grid.Row="1" Grid.Column="1" Height="26" Margin="0,0,0,8" VerticalContentAlignment="Center"
                      AutomationProperties.Name="{loc:Loc A11y_Hotkey_Repeat}" />
 
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Loc Tray_Burst}" VerticalAlignment="Center" />
-            <TextBox x:Name="BurstHotkeyBox" Grid.Row="2" Grid.Column="1" Height="26" VerticalContentAlignment="Center"
-                     AutomationProperties.Name="{loc:Loc A11y_Hotkey_Burst}" />
         </Grid>
 
         <TextBlock Text="{loc:Loc Settings_Engine}" FontWeight="SemiBold" Margin="0,16,0,8" />

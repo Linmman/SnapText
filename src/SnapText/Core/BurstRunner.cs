@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using SnapText.Capture;
@@ -9,29 +9,49 @@ namespace SnapText.Core;
 internal sealed record BurstOutcome(string Text, double? Confidence, int InputFrames, int OcrFrames, int AgreementCount);
 
 /// <summary>
-/// 连拍取字：对同一区域连续采样多帧 → 跳过重复帧 → 逐帧 OCR → 选"最稳/最准"的一帧。
+/// 自适应多帧取字：对同一区域连续采样几帧 → 跳过重复帧 → 逐帧 OCR → 选"最稳/最准"的一帧。
+/// 画面静止时只识别一帧（和单帧取字一样快）；画面在动（播放中的视频）才多花几百毫秒换稳定结果。
 /// 目的：视频播放中的单帧可能糊了、只抓到半截、或正好在切换，多帧里总有一帧是干净的。
 /// </summary>
 internal static class BurstRunner
 {
-    /// <summary>采样帧数（间隔 ~90ms，总计约 0.5 秒）。</summary>
+    /// <summary>运动场景最多采样多少帧（间隔 ~90ms，采样窗口约 0.45 秒）。</summary>
     public const int FrameCount = 6;
+
+    /// <summary>静止探针：两帧间隔；相同即视为画面静止。</summary>
+    private const int ProbeIntervalMs = 80;
 
     private const int FrameIntervalMs = 90;
     private const double SameFrameAvgDiff = 6.0;   // 16×16 灰度平均差小于此值视为同一帧
 
-    /// <summary>抓取屏幕区域并连拍取字（位图由本方法负责释放）。</summary>
-    public static async Task<BurstOutcome> RunAsync(Rectangle region, IOcrEngine ocr, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// 自适应取字（「取字」与「重复上次区域」主流程用）：
+    /// 先抓两帧探测——画面静止 → 只识别一帧；画面在动 → 继续采满帧数、去重后逐帧识别并选最优。
+    /// </summary>
+    /// <param name="onMultiFrame">探测到画面在动时回调一次（用于显示"多帧选优"进度提示）。</param>
+    public static async Task<BurstOutcome> RunAdaptiveAsync(
+        Rectangle region,
+        IOcrEngine ocr,
+        Action? onMultiFrame = null,
+        CancellationToken cancellationToken = default)
     {
         var frames = new List<Bitmap>();
         try
         {
-            for (var i = 0; i < FrameCount; i++)
+            frames.Add(ScreenCapture.CaptureRegion(region));
+            await Task.Delay(ProbeIntervalMs, cancellationToken);
+            frames.Add(ScreenCapture.CaptureRegion(region));
+
+            if (!IsSameFrame(frames[0], frames[^1]))
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                frames.Add(ScreenCapture.CaptureRegion(region));
-                if (i < FrameCount - 1)
+                // 画面在动：多帧的成本只在这种场景付出
+                onMultiFrame?.Invoke();
+                for (var i = frames.Count; i < FrameCount; i++)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
                     await Task.Delay(FrameIntervalMs, cancellationToken);
+                    frames.Add(ScreenCapture.CaptureRegion(region));
+                }
             }
 
             return await SelectBestAsync(frames, ocr, cancellationToken);

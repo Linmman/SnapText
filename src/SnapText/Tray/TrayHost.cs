@@ -25,7 +25,6 @@ internal sealed class TrayHost : IDisposable
 
     private readonly MenuItem _grabItem = new();
     private readonly MenuItem _repeatItem = new();
-    private readonly MenuItem _burstItem = new();
     private readonly MenuItem _historyItem = new();
     private readonly MenuItem _settingsItem = new();
     private readonly MenuItem _exitItem = new();
@@ -33,7 +32,6 @@ internal sealed class TrayHost : IDisposable
     public TrayHost(
         Action onGrab,
         Action onRepeatLast,
-        Action onBurst,
         Action onSettings,
         Action onExit,
         Func<IReadOnlyList<HistoryEntry>> loadHistory,
@@ -55,14 +53,12 @@ internal sealed class TrayHost : IDisposable
 
         _grabItem.Click += (_, _) => SafeInvoke(onGrab, "grab");
         _repeatItem.Click += (_, _) => SafeInvoke(onRepeatLast, "repeat");
-        _burstItem.Click += (_, _) => SafeInvoke(onBurst, "burst");
         _settingsItem.Click += (_, _) => SafeInvoke(onSettings, "settings");
         _exitItem.Click += (_, _) => SafeInvoke(onExit, "exit");
 
         var menu = new ContextMenu();
         menu.Items.Add(_grabItem);
         menu.Items.Add(_repeatItem);
-        menu.Items.Add(_burstItem);
         menu.Items.Add(_historyItem);
         menu.Items.Add(new Separator());
         menu.Items.Add(_settingsItem);
@@ -88,7 +84,6 @@ internal sealed class TrayHost : IDisposable
         _taskbarIcon.ToolTipText = Loc.T("Tray_Tooltip");
         _grabItem.Header = Loc.T("Tray_Grab");
         _repeatItem.Header = Loc.T("Tray_RepeatLast");
-        _burstItem.Header = Loc.T("Tray_Burst");
         _historyItem.Header = Loc.T("Tray_History");
         _settingsItem.Header = Loc.T("Tray_Settings");
         _exitItem.Header = Loc.T("Tray_Exit");

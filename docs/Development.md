@@ -1,4 +1,4 @@
-# 开发与验证
+﻿# 开发与验证
 
 > 面向**维护者与贡献者**的文档。使用者请看 [README](../README.zh-CN.md)；贡献流程见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 > 架构细节见 [Architecture.md](Architecture.md)，发版流程见 [Release.md](Release.md)。
@@ -22,8 +22,8 @@ dotnet publish src\SnapText\SnapText.csproj -c Release -r win-x64 --self-contain
 ```
 src/SnapText/
 ├─ App.xaml(.cs)            启动、单实例、CLI 分流
-├─ Cli/CliRunner.cs         --grab / --grab-region / --ocr / --ocr-burst / --capture / --scan / --qr / --history / --loc / --bench
-├─ Core/                    控制器（热键→框选→OCR→剪贴板）、剪贴板服务、IPC 信号、连拍选优、取字历史（HistoryStore）
+├─ Cli/CliRunner.cs         --grab / --grab-region / --ocr / --ocr-burst / --ocr-adaptive / --capture / --scan / --qr / --history / --loc / --bench
+├─ Core/                    控制器（热键→框选→OCR→剪贴板）、剪贴板服务、IPC 信号、自适应多帧选优（BurstRunner）、取字历史（HistoryStore）
 ├─ Capture/                 冻结截图、显示器枚举（DPI 感知）
 ├─ Overlay/                 多屏覆盖层：框选、遮罩、十字线、尺寸提示
 ├─ Ocr/                     引擎抽象 + PP-OCRv5（RapidOcrNet/ONNX）+ Windows OCR + 选择/回落
@@ -63,6 +63,7 @@ src/SnapText/
 | Windows 系统 OCR | `…B 站视频…https://www.biIibiIi.com/video/BV1xx411 c7mD …`（`bilibili` 误识、链接被空格断开） | ≈109 ms | ≈0.3 s |
 
 连拍（6 帧）实测：三张相同帧时只 OCR 1 帧（859ms → 656ms）；清晰/模糊/噪点三帧正确选中清晰帧（conf=0.989）。
+自适应取字实测（`tools/smoke-adaptive.ps1`）：静止画面 frames=2 / ocr=1 / conf≈0.999（≈单帧速度）；画面每 80ms 变化时 frames=6 / ocr=5 / 约 1.8 秒，选中最优帧。
 
 ## 五、验证记录
 
@@ -72,8 +73,9 @@ src/SnapText/
 |---|---|---|
 | `smoke-pipeline.ps1` | 截屏→OCR、区域取字+剪贴板读回、二维码往返、IPC 触发覆盖层 | 内容无关，锁屏也能跑；已有实例时自动跳过相关步骤 |
 | `smoke-history.ps1` | 取字历史的写入/倒序/连续重复跳过/搜索/UTF-8 往返/条数上限裁剪/JSONL 格式/清空/用法退出码/默认存储路径（12 项断言） | 内容无关，锁屏也能跑；用临时文件隔离（`SNAPTEXT_HISTORY_FILE` / `SNAPTEXT_HISTORY_MAX`），可与运行中的实例并存 |
-| `smoke-loc.ps1` | 界面语言：`--loc check` 三语键集合一致 + 三语言 CLI 输出互不相同 + zh/ja/en 各启动一次应用（日志零 `Missing UI string`、托盘创建成功） | 锁屏也能跑；不改设置（语言用 `SNAPTEXT_LANG` 强制） |
-| `smoke-e2e.ps1` | 交互式全链路：热键 → 覆盖层 → 鼠标拖拽 → 剪贴板 | 需解锁桌面（锁屏会拦截键鼠注入） |
+| `smoke-loc.ps1` | 界面语言：`--loc check` 三语键集合一致 + 三语言 CLI 输出互不相同 + zh/ja/en 各启动一次应用（日志零 `Missing UI string`、托盘创建成功） | 锁屏也能跑；不改设置（语言用 `SNAPTEXT_LANG` 强制）；已有实例在运行时自动跳过启动项 |
+| `smoke-adaptive.ps1` | 自适应取字：静止画面走单帧快路径（frames=2/ocr=1）、画面在动走多帧选优（frames=6/ocr≥2 且结果正确） | 需解锁桌面（会显示一个小测试窗口，不注入键鼠、不写剪贴板）；可与运行中的实例并存 |
+| `smoke-e2e.ps1` | 交互式全链路：热键 → 覆盖层 → 鼠标拖拽 → 剪贴板 | 需解锁桌面（锁屏会拦截键鼠注入）**且需先退出正在运行的 SnapText**（检测到已有实例会自动 SKIP，不接管用户实例） |
 | `test-hotkey-disable.ps1` | 验证"热键留空 = 关闭"（自动备份/还原配置） | 需先退出正在运行的实例 |
 | `make-*.ps1` | 生成测试素材（文字图 / 连拍帧 / URL 边界用例） | — |
 | `diag-input.ps1` | 诊断环境是否允许注入键鼠（锁屏/远程环境常见限制） | — |
@@ -85,6 +87,7 @@ src/SnapText/
 - ✅ 二维码/条码：生成 → 解回（含中文内容）往返一致，单次约 47ms
 - ✅ URL 修复边界：5 条用例（断词合并 / 保留说明文字 / 保留普通单词 / 补 https / 中文原文不动）
 - ✅ 连拍选优：清晰帧胜出；换帧顺序结果一致；相同帧只 OCR 一次
+- ✅ 自适应取字（`tools/smoke-adaptive.ps1`，4/4 PASS）：静止画面 frames=2/ocr=1（conf≈0.999）；画面在动 frames=6/ocr=5、约 1.8 秒选中最优帧；`--no-copy` 不碰剪贴板
 - ✅ 托盘启动、热键注册、`--grab` IPC → 覆盖层打开
 - ✅ 交互端到端（解锁桌面）：热键 → 覆盖层 → 鼠标拖拽（选区 120,150,1380,410）→ OCR 828ms / conf=0.968 → 剪贴板命中 3/3
 - ✅ 「打开链接」按钮：作者手动验证可用（暂无自动化点击测试）

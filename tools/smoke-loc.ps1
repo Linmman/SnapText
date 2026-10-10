@@ -82,12 +82,22 @@ try {
     Check 'cli-output-distinct' ($distinct -eq 3) ("unique=" + $distinct)
 
     # 3) 三种语言启动应用：无缺失文案、语言日志正确、托盘创建成功
-    foreach ($lang in 'zh', 'ja', 'en') {
-        $text = Start-WithLanguage $lang
-        $missing = ([regex]::Matches($text, 'Missing UI string')).Count
-        $langOk = $text -match ("UI language: " + $lang + " ")
-        $trayOk = $text -match 'Tray icon created'
-        Check ("startup-" + $lang) ($missing -eq 0 -and $langOk -and $trayOk) ("missing=$missing lang=$langOk tray=$trayOk")
+    #    单实例互斥体下无法与运行中的实例共存：检测到就跳过（不打断用户正在用的实例）
+    $existing = Get-Process -Name SnapText -ErrorAction SilentlyContinue
+    if ($existing) {
+        Write-Host ("- startup-*: SKIP  (已有 SnapText 实例在运行 pid={0}；关掉它再跑即可做这三项检查)" -f $existing[0].Id)
+        $results['startup-zh'] = 'SKIP'
+        $results['startup-ja'] = 'SKIP'
+        $results['startup-en'] = 'SKIP'
+    }
+    else {
+        foreach ($lang in 'zh', 'ja', 'en') {
+            $text = Start-WithLanguage $lang
+            $missing = ([regex]::Matches($text, 'Missing UI string')).Count
+            $langOk = $text -match ("UI language: " + $lang + " ")
+            $trayOk = $text -match 'Tray icon created'
+            Check ("startup-" + $lang) ($missing -eq 0 -and $langOk -and $trayOk) ("missing=$missing lang=$langOk tray=$trayOk")
+        }
     }
 
     Write-Host ''

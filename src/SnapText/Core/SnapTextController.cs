@@ -41,7 +41,6 @@ internal sealed class SnapTextController : IDisposable
     private EventWaitHandle? _grabSignal;
     private Thread? _signalThread;
     private volatile bool _disposed;
-    private bool _burstAfterSelection;
     private string? _appliedLanguage;
 
     public SnapTextController()
@@ -54,7 +53,7 @@ internal sealed class SnapTextController : IDisposable
     {
         Loc.Initialize(_settings.Language);
         Log.Info($"UI language: {Loc.Language} (setting={_settings.Language})");
-        _tray = new TrayHost(Grab, RepeatLast, GrabBurst, ShowSettings, Exit,
+        _tray = new TrayHost(Grab, RepeatLast, ShowSettings, Exit,
             loadHistory: () => _history.Load(),
             onHistoryItem: CopyHistoryEntry,
             onHistorySearch: ShowHistory,
@@ -91,8 +90,6 @@ internal sealed class SnapTextController : IDisposable
         if (!_hotkeys.Register(_settings.GrabHotkey, Grab, out var error))
             ToastService.Show(Loc.T("Toast_HotkeyRegisterFailed_Title"), error);
         if (!_hotkeys.Register(_settings.RepeatHotkey, RepeatLast, out error))
-            ToastService.Show(Loc.T("Toast_HotkeyRegisterFailed_Title"), error);
-        if (!_hotkeys.Register(_settings.BurstHotkey, GrabBurst, out error))
             ToastService.Show(Loc.T("Toast_HotkeyRegisterFailed_Title"), error);
 
         AutoStart.Apply(_settings.AutoStart);
@@ -185,27 +182,17 @@ internal sealed class SnapTextController : IDisposable
 
         if (rect is null || capture is null)
         {
-            _burstAfterSelection = false;   // 用户取消了框选
-            overlay.Dispose();
+            overlay.Dispose();   // 用户取消了框选
             return;
         }
 
         _lastRect = rect.Value;
         _hasLastRect = true;
 
-        if (_burstAfterSelection)   // 连拍热键触发的框选：框完直接连拍（重新抓活动帧，不用冻结帧）
-        {
-            _burstAfterSelection = false;
-            overlay.Dispose();
-            Log.Info($"Burst after selection: {rect.Value}");
-            _ = RunBurstAsync(rect.Value);
-            return;
-        }
-
         Bitmap? crop = null;
         try
         {
-            crop = capture.Crop(rect.Value);
+            crop = capture.Crop(rect.Value);   // 冻结帧用于扫码与可选截图保存；文字识别走自适应多帧采样
         }
         catch (Exception ex)
         {
@@ -217,67 +204,6 @@ internal sealed class SnapTextController : IDisposable
         if (crop is null) return;
 
         _ = ProcessAsync(crop, rect.Value, restoreFocus: true);
-    }
-
-    /// <summary>热键：连拍取字。有上次区域就直接连拍；没有则先框选，框完自动连拍。</summary>
-    private void GrabBurst()
-    {
-        try
-        {
-            if (_overlay is not null)
-            {
-                _burstAfterSelection = false;
-                _overlay.Cancel();
-                return;
-            }
-
-            if (_hasLastRect)
-            {
-                Log.Info($"Burst on last region: {_lastRect}");
-                _ = RunBurstAsync(_lastRect);
-                return;
-            }
-
-            Log.Info("Burst: no previous region; selecting one first.");
-            _burstAfterSelection = true;
-            Grab();
-        }
-        catch (Exception ex)
-        {
-            Log.Error("GrabBurst failed", ex);
-        }
-    }
-
-    /// <summary>连拍多帧选最优（视频播放中取字的模式，比单帧慢一点但更稳）。</summary>
-    private async Task RunBurstAsync(Rectangle region)
-    {
-        try
-        {
-            ToastService.Show(Loc.T("Toast_Burst_Title"), Loc.T("Toast_Burst_Body"), region);
-
-            var started = Environment.TickCount64;
-            var outcome = await BurstRunner.RunAsync(region, _ocr);
-            var text = UrlHelper.Normalize(PostProcessor.Clean(outcome.Text, _settings.MergeLines));
-            var elapsed = Environment.TickCount64 - started;
-
-            Log.Info(
-                $"Burst done in {elapsed} ms: frames={outcome.InputFrames} ocr={outcome.OcrFrames} " +
-                $"agree={outcome.AgreementCount} chars={text.Length} conf={outcome.Confidence?.ToString("F3") ?? "n/a"}");
-
-            if (text.Length == 0)
-            {
-                ToastService.Show(Loc.T("Toast_NoText_Title"), Loc.T("Toast_NoText_Burst_Body"), region);
-                return;
-            }
-
-            ShowResult(text, region, isCode: false, lowConfidence: outcome.Confidence is { } c && c < LowConfidenceThreshold,
-                source: "burst");
-        }
-        catch (Exception ex)
-        {
-            Log.Error("Burst failed", ex);
-            ToastService.Show(Loc.T("Toast_BurstFailed_Title"), ex.Message, region);
-        }
     }
 
     /// <summary>热键：不框选，直接对上次区域重新取字（视频字幕场景）。</summary>
@@ -308,16 +234,19 @@ internal sealed class SnapTextController : IDisposable
         {
             var started = Environment.TickCount64;
 
-            // 二维码扫描与 OCR 并行（不额外增加延迟）；框选到码时以码的内容为准。
+            // 二维码扫描与文字识别并行（不额外增加延迟）；框选到码时以码的内容为准。
             // 扫码用克隆位图：GDI+ 位图不是线程安全的，两条路径同时读同一张位图会抛
             // "Object is currently in use elsewhere"——曾导致 PP-OCR 偶发失败后静默回落到系统 OCR、或二维码偶发识别不到。
             using var codeImage = (Bitmap)image.Clone();
             var codeTask = Task.Run(() => CodeScanner.TryDecode(codeImage));
-            OcrOutcome? outcome = null;
+
+            // 文字识别走自适应采样：画面静止只识别一帧（≈单帧速度），画面在动（播放中的视频）才多帧选优
+            BurstOutcome? outcome = null;
             Exception? ocrError = null;
             try
             {
-                outcome = await _ocr.RecognizeAsync(image);
+                outcome = await BurstRunner.RunAdaptiveAsync(rect, _ocr,
+                    onMultiFrame: () => ToastService.Show(Loc.T("Toast_Burst_Title"), Loc.T("Toast_Burst_Body"), rect));
             }
             catch (Exception ex)
             {
@@ -346,7 +275,9 @@ internal sealed class SnapTextController : IDisposable
             var text = UrlHelper.Normalize(PostProcessor.Clean(outcome.Text, _settings.MergeLines));
             var lowConfidence = outcome.Confidence is { } confidence && confidence < LowConfidenceThreshold;
 
-            Log.Info($"OCR done in {elapsed} ms, {text.Length} chars, conf={outcome.Confidence?.ToString("F3") ?? "n/a"}.");
+            Log.Info(
+                $"OCR done in {elapsed} ms, {text.Length} chars, conf={outcome.Confidence?.ToString("F3") ?? "n/a"}, " +
+                $"frames={outcome.InputFrames}/ocr={outcome.OcrFrames}.");
 
             if (_settings.SaveCapture)
                 SaveCapture(image, text);

@@ -79,6 +79,15 @@ function Read-ClipboardWithRetry([int]$attempts = 8) {
     return ''
 }
 
+# 已有实例在运行（很可能是用户自己在用）：接管它会污染用户的剪贴板/历史/屏幕，直接跳过
+# （单实例互斥体下也无法再起一个测试实例，所以这里必须提前退出）
+$existingInstance = Get-Process -Name SnapText -ErrorAction SilentlyContinue
+if ($existingInstance) {
+    Write-Host ("SKIP: 已有 SnapText 实例在运行（pid={0}）——本测试需要独占实例，请先退出托盘里的 SnapText 再跑" -f $existingInstance[0].Id)
+    Write-Host 'E2E_RESULT: SKIP'
+    exit 0
+}
+
 $logPath = Get-SnapTextLogPath
 $logOffset = Get-LogLength $logPath
 
@@ -116,18 +125,13 @@ try {
         Start-Sleep -Milliseconds 30
     }
 
-    # 2. 启动 SnapText（如果没有在运行），并等"启动完成"日志
-    $existing = Get-Process -Name SnapText -ErrorAction SilentlyContinue
-    if (-not $existing) {
-        $proc = Start-Process -FilePath $Exe -PassThru
-        Write-Host "SnapText starting (pid=$($proc.Id)) ..."
-        if (-not (Wait-Log 'Hotkey registered' 40000 $logOffset)) {
-            throw 'SnapText 启动超时：未看到 Hotkey registered 日志'
-        }
-        Write-Host 'SnapText ready (hotkey registered)'
-    } else {
-        Write-Host "SnapText already running (pid=$($existing[0].Id))"
+    # 2. 启动 SnapText（前面已确认没有实例在运行），并等"启动完成"日志
+    $proc = Start-Process -FilePath $Exe -PassThru
+    Write-Host "SnapText starting (pid=$($proc.Id)) ..."
+    if (-not (Wait-Log 'Hotkey registered' 40000 $logOffset)) {
+        throw 'SnapText 启动超时：未看到 Hotkey registered 日志'
     }
+    Write-Host 'SnapText ready (hotkey registered)'
 
     # 3. 全局热键 Ctrl+Alt+Q → 等覆盖层
     [System.Windows.Forms.SendKeys]::SendWait('^%q')
