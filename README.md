@@ -105,4 +105,4 @@ Developer docs are currently in Chinese; issues and PRs in English are perfectly
 ## License
 
 MIT — see [LICENSE](LICENSE).
-Bundled third-party components: [PP-OCRv5 models](https://github.com/PaddlePaddle/PaddleOCR) (Apache-2.0), [RapidOcrNet](https://github.com/BobLd/RapidOcrNet), [ONNX Runtime](https://github.com/microsoft/onnxruntime), [SkiaSharp](https://github.com/mono/SkiaSharp), [H.NotifyIcon](https://github.com/HavenDV/H.NotifyIcon), [ZXing.Net](https://github.com/micjahn/ZXing.Net) (MIT/Apache-2.0).
+Bundled third-party components and models are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

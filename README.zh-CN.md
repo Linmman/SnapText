@@ -105,4 +105,4 @@ SnapText.exe --history clear                               # 清空取字历史
 ## 许可
 
 MIT，见 [LICENSE](LICENSE)。
-随包使用的第三方组件：[PP-OCRv5 模型](https://github.com/PaddlePaddle/PaddleOCR)（Apache-2.0）、[RapidOcrNet](https://github.com/BobLd/RapidOcrNet)、[ONNX Runtime](https://github.com/microsoft/onnxruntime)、[SkiaSharp](https://github.com/mono/SkiaSharp)、[H.NotifyIcon](https://github.com/HavenDV/H.NotifyIcon)、[ZXing.Net](https://github.com/micjahn/ZXing.Net)（MIT / Apache-2.0）。
+随包使用的第三方组件与模型见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。

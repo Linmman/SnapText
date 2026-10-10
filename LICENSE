@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 SnapText contributors
+Copyright (c) 2026 Linmman
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,14 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Third-party notices:
-
-- PaddleOCR PP-OCRv5 models (Apache-2.0) — https://github.com/PaddlePaddle/PaddleOCR
-- RapidOcrNet (Apache-2.0 / MIT) — https://github.com/BobLd/RapidOcrNet
-- ONNX Runtime (MIT) — https://github.com/microsoft/onnxruntime
-- SkiaSharp (MIT) — https://github.com/mono/SkiaSharp
-- H.NotifyIcon (MIT) — https://github.com/HavenDV/H.NotifyIcon
-- ZXing.Net (Apache-2.0) — https://github.com/micjahn/ZXing.Net

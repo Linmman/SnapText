@@ -105,4 +105,4 @@ issue も PR も歓迎です。ビルド方法・テストスクリプト・3 �
 ## ライセンス
 
 MIT（[LICENSE](LICENSE)）。
-同梱のサードパーティ：[PP-OCRv5 モデル](https://github.com/PaddlePaddle/PaddleOCR)（Apache-2.0）、[RapidOcrNet](https://github.com/BobLd/RapidOcrNet)、[ONNX Runtime](https://github.com/microsoft/onnxruntime)、[SkiaSharp](https://github.com/mono/SkiaSharp)、[H.NotifyIcon](https://github.com/HavenDV/H.NotifyIcon)、[ZXing.Net](https://github.com/micjahn/ZXing.Net)（MIT / Apache-2.0）。
+同梱のサードパーティコンポーネントとモデルは [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) を参照。
