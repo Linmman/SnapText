@@ -19,6 +19,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- 单元测试直接覆盖 internal 纯函数（tests/SnapText.Tests） -->
+    <InternalsVisibleTo Include="SnapText.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
     <PackageReference Include="RapidOcrNet" Version="4.2.0" />
     <PackageReference Include="ZXing.Net.Bindings.Windows.Compatibility" Version="0.16.16" />

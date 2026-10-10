@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 镜像已预装 .NET 10 SDK，这里显式钉住版本保证可复现
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: dotnet build src/SnapText/SnapText.csproj -c Release
+
+      - name: Test
+        run: dotnet test tests/SnapText.Tests/SnapText.Tests.csproj -c Release
+
+      # 三语文案键集合一致性（ smoke-loc 依赖解锁桌面？否——纯内存校验，可在 CI 跑）
+      - name: Loc check
+        run: dotnet run --project src/SnapText/SnapText.csproj -c Release -- --loc check

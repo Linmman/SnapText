@@ -111,7 +111,8 @@ internal static class BurstRunner
         return new BurstOutcome(bestText, bestConfidence, frames.Count, distinct.Count, agreement);
     }
 
-    private static double Score(string text, double? confidence)
+    /// <summary>选帧打分（internal 供单元测试直接覆盖）。</summary>
+    internal static double Score(string text, double? confidence)
     {
         if (string.IsNullOrWhiteSpace(text)) return -1;
         return (confidence ?? 0.9) * 100 + Math.Min(text.Length, 60);
