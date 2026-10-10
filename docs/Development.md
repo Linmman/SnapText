@@ -1,4 +1,4 @@
-﻿# 开发与验证
+# 开发与验证
 
 > 面向**维护者与贡献者**的文档。使用者请看 [README](../README.zh-CN.md)；贡献流程见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 > 架构细节见 [Architecture.md](Architecture.md)，发版流程见 [Release.md](Release.md)。

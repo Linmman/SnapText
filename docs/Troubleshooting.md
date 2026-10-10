@@ -1,4 +1,4 @@
-﻿# 常见问题与排查
+# 常见问题与排查
 
 > 排查第一步永远是看日志：`%LOCALAPPDATA%\SnapText\logs\app-yyyyMMdd.log`
 > 在资源管理器地址栏粘贴 `%LOCALAPPDATA%\SnapText\logs` 即可打开。
