@@ -2,6 +2,27 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 的格式。
 
+## [Unreleased]
+
+### 新增
+- **xUnit 单元测试工程**（`tests/SnapText.Tests`，61 个用例）与 CI workflow（`.github/workflows/ci.yml`：构建 + 测试 + 三语校验）；覆盖 UrlHelper 边界、PostProcessor 净化/合行、热键解析全部分支、选帧打分与三语文案表一致性
+- CLI `--help` / `-h`：输出全部子命令与常用选项（三语文案）
+- **应用图标**：exe 与托盘共用一份嵌入的 `SnapText.ico`（`tools/make-icon.ps1` 生成），托盘不再运行时画字
+- `SECURITY.md` 安全策略与漏洞报告渠道
+
+### 变更
+- 取字 IPC 命名事件（`Local\SnapText.Grab`）ACL 收紧为仅当前 Windows 用户可触发
+
+### 修复
+- 设置保存改为「临时文件 + 原子替换」：写一半崩溃不再丢配置
+- PP-OCR 模型路径改为显式文件名常量（不再按文件名片段模糊匹配）
+- 日志按保留期清理：30 天前的 `app-*.log` 自动删除
+- 历史条数统计不再整文件反序列化
+
+### 性能
+- OCR 输入不再经过 PNG 编解码：Windows OCR 直接从像素构造 `SoftwareBitmap`，PP-OCR 直接构造 `SKBitmap`
+- 帧静止判定改用 `LockBits` 整块读内存（原为 256 次 `GetPixel`）
+
 ## [0.2.0] - 2026-10-10
 
 ### 修复
