@@ -47,11 +47,43 @@ git push origin main --tags
 
 ## 4. 在 GitHub 建 Release
 
+**Release 说明保持精简**——功能全文在 README（三语）里、详细变更在 CHANGELOG 里，不要在 Release 里重复：
+
+- **英文在前、中文在后**（仓库面向国际读者，README 以英文为基准）；每种语言 10 行以内；
+- 每种语言只写四样：它是什么（一句话）→ 怎么下载安装（一句话 + 附件名）→ 校验（SHA-256 一行 + `certutil` 命令）→ **本版要点 3-5 条**；
+- 结尾给两个链接：README 的「能做什么」一节（完整功能）和 `CHANGELOG.md`（完整变更）；
+- 不要复制功能清单、安装排错、已知限制——那些都在 README / `docs/Troubleshooting.md` 里。
+
+模板（把版本号与 SHA256 换掉即可）：
+
+```text
+<一句话：它是什么、离线、免安装、界面支持哪些语言>
+
+**Download:** `SnapText-vX.Y.Z-win-x64.zip` below → unzip → run `SnapText.exe` → press `Ctrl+Alt+Q` …
+**Verify:** SHA-256 `<hash>` (`certutil -hashfile SnapText-vX.Y.Z-win-x64.zip SHA256`)
+**All features:** [README](…/README.md#what-it-can-do) · **full changelog:** [CHANGELOG.md](…/blob/main/CHANGELOG.md)
+
+**What's in this release**
+- 要点 1 / 要点 2 / 要点 3
+
+---
+
+<同一句中文>
+
+**下载**：… ／ **校验**：… ／ **完整功能**：[README](…/README.zh-CN.md) ／ **完整变更**：[CHANGELOG.md](…)
+
+**本版要点**
+- 要点 1 / 要点 2 / 要点 3
+```
+
+创建步骤：
+
 1. 打开 `https://github.com/<你的用户名>/SnapText/releases/new`；
-2. 选择刚推送的 tag（或新建同名 tag），标题填 `v0.1.0`；
-3. 说明内容直接引用 `CHANGELOG.md` 对应条目，附上 SHA256；
-4. 上传 `dist/SnapText-v0.1.0-win-x64.zip`；
-5. 发布。
+2. 选择刚推送的 tag（或新建同名 tag），标题填 `v0.1.0`，贴入上面的说明模板（替换版本号与 SHA256）；
+3. 上传 `dist/SnapText-v0.1.0-win-x64.zip`；
+4. 发布。
+
+> 本机没有 `gh` CLI：用 API 建 Release / 传附件（token 从 git 凭据管理器取）的可用做法见项目记忆 `snaptext-release-publishing.md`。
 
 ## 5. 发布后检查
 
