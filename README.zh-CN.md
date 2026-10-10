@@ -1,4 +1,4 @@
-# SnapText · 屏幕取字
+﻿# SnapText · 屏幕取字
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -64,7 +64,7 @@ SnapText 把这串步骤压成一步：**热键 → 框选 → 粘贴**。配合
 
 ## 命令行（可选）
 
-给脚本、快捷方式、AutoHotkey 用（没有 `--help`，这就是全部命令）：
+给脚本、快捷方式、AutoHotkey 用（`SnapText.exe --help` 输出同一份清单）：
 
 ```powershell
 SnapText.exe --grab                                        # 让已运行的实例取一次字

@@ -1,4 +1,4 @@
-# SnapText — 画面上の文字をそのまま取得
+﻿# SnapText — 画面上の文字をそのまま取得
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -64,7 +64,7 @@ SnapText はそれを 1 手に縮めます：**ホットキー → 囲む → �
 
 ## コマンドライン（任意）
 
-スクリプト、ショートカット、AutoHotkey 向けです（`--help` はありません。一覧はこれで全部です）：
+スクリプト、ショートカット、AutoHotkey 向けです（`--help` で同じ一覧が出力されます）：
 
 ```powershell
 SnapText.exe --grab                                        # 起動中のインスタンスに取得させる

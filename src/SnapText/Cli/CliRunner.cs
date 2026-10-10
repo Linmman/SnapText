@@ -65,6 +65,10 @@ internal static class CliRunner
             case "--loc":
                 exitCode = RunLocCheck(args);
                 return true;
+            case "--help":
+            case "-h":
+                Print(Loc.T("Cli_Help"));
+                return true;
             case "--version":
                 Print("SnapText " + (typeof(CliRunner).Assembly.GetName().Version?.ToString() ?? "0.0.0"));
                 return true;

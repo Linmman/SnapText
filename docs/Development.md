@@ -1,4 +1,4 @@
-# 开发与验证
+﻿# 开发与验证
 
 > 面向**维护者与贡献者**的文档。使用者请看 [README](../README.zh-CN.md)；贡献流程见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 > 架构细节见 [Architecture.md](Architecture.md)，发版流程见 [Release.md](Release.md)。
@@ -95,7 +95,7 @@ src/SnapText/
 - ✅ 取字历史端到端落盘：真实热键 → 框选 → OCR → 剪贴板 后，历史文件新增 1 条（`source=ocr`）；随后同一文本再取一次，历史保持 1 条（去重生效）
 - ✅ GDI+ 并发修复：修复前连续两次 e2e 中 PP-OCR 抛 `Object is currently in use elsewhere` 并静默回落系统 OCR（识别质量下降）；修复后连续两次 e2e 均命中 PP-OCRv5（conf=0.968，无回落）
 - ⏸ 托盘「最近取字」子菜单的**点击复制**、以及「搜索历史…」面板的点击/输入：路径简单（点条目 → 写剪贴板 + 轻提示），暂无自动化点击测试，待手动过一遍（与「打开链接」按钮同级别）
-- ✅ 界面语言（`tools/smoke-loc.ps1`，8/8 PASS）：三语言文案表键集合一致（116 键 × 3 语言）；CLI 输出随 `SNAPTEXT_LANG` 切换且三种语言互不相同；zh/ja/en 各启动一次应用，日志均无 `Missing UI string`、托盘创建成功
+- ✅ 界面语言（`tools/smoke-loc.ps1`，8/8 PASS）：三语言文案表键集合一致（117 键 × 3 语言）；CLI 输出随 `SNAPTEXT_LANG` 切换且三种语言互不相同；zh/ja/en 各启动一次应用，日志均无 `Missing UI string`、托盘创建成功
 - ⏸ 设置窗口「界面语言」下拉选择与"保存后即时切换"：UI 交互无自动化测试，待手动过一遍（语言解析与 CLI 同源，已被上面的脚本覆盖）
 
 ## 六、README 三语同步规则

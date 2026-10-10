@@ -149,6 +149,25 @@ internal static class Strings
         ["Cli_HistoryCleared"] = "OK 已清空取字历史",
         ["Cli_HistoryFile"] = "历史文件: {0}",
         ["Cli_LocMissing"] = "FAILED: 文案表缺键：{0}",
+        ["Cli_Help"] =
+            """
+            SnapText —— 按热键取字：本地离线 OCR，结果直接进剪贴板。
+
+              --ocr <图片路径> [--out 文本.txt] [--engine auto|ppocr|windows] [--no-merge]    识别图片中的文字
+              --capture [--out 截图.png]                                                      全屏截图存为 PNG
+              --grab-region <x,y,w,h> [--out 文本.txt] [--no-copy] [--no-merge]               固定屏幕区域取字
+              --ocr-burst <图1> [图2 …] [--out 文本.txt]                                      多图连拍选优
+              --ocr-adaptive <x,y,w,h> [--out 文本.txt] [--no-copy] [--no-merge]              自适应多帧取字
+              --bench <图片路径> [--n 10]                                                     OCR 延迟基准
+              --scan <图片路径> [--out 内容.txt]                                              识别二维码/条码
+              --qr <文本> [--out 二维码.png] [--size 300]                                     生成二维码 PNG
+              --grab                                                                          通知正在运行的 SnapText 取字
+              --history list|search|add|clear [--n N] [--out 文本.txt]                        取字历史
+              --loc check                                                                     校验三语言文案表键集合一致
+              --help / --version                                                              本帮助 / 版本号
+
+            详细说明见 README.zh-CN.md；--engine 取值 auto（默认）| ppocr | windows。
+            """,
     };
 
     public static readonly Dictionary<string, string> Ja = new()
@@ -292,6 +311,25 @@ internal static class Strings
         ["Cli_HistoryCleared"] = "OK: 履歴を消去しました",
         ["Cli_HistoryFile"] = "履歴ファイル: {0}",
         ["Cli_LocMissing"] = "FAILED: 文案表に欠けているキー: {0}",
+        ["Cli_Help"] =
+            """
+            SnapText —— ホットキーで文字を取得：ローカル・オフライン OCR、結果はそのままクリップボードへ。
+
+              --ocr <画像パス> [--out テキスト.txt] [--engine auto|ppocr|windows] [--no-merge]    画像内のテキストを認識
+              --capture [--out スクリーンショット.png]                                            全画面を PNG 保存
+              --grab-region <x,y,w,h> [--out テキスト.txt] [--no-copy] [--no-merge]               固定領域から文字を取得
+              --ocr-burst <画像1> [画像2 …] [--out テキスト.txt]                                  複数画像の連写から最良を抽出
+              --ocr-adaptive <x,y,w,h> [--out テキスト.txt] [--no-copy] [--no-merge]              適応マルチフレーム取得
+              --bench <画像パス> [--n 10]                                                         OCR レイテンシ計測
+              --scan <画像パス> [--out 内容.txt]                                                  QR コード／バーコードを認識
+              --qr <テキスト> [--out QR.png] [--size 300]                                         QR コード PNG を生成
+              --grab                                                                              起動中の SnapText に取得を通知
+              --history list|search|add|clear [--n N] [--out テキスト.txt]                        取得履歴
+              --loc check                                                                         3 言語テーブルのキー一致を検証
+              --help / --version                                                                  このヘルプ / バージョン
+
+            詳細は README.ja.md を参照。--engine の値: auto（既定）| ppocr | windows。
+            """,
     };
 
     public static readonly Dictionary<string, string> En = new()
@@ -435,5 +473,24 @@ internal static class Strings
         ["Cli_HistoryCleared"] = "OK: history cleared",
         ["Cli_HistoryFile"] = "history file: {0}",
         ["Cli_LocMissing"] = "FAILED: missing keys in the language tables: {0}",
+        ["Cli_Help"] =
+            """
+            SnapText — grab text with a hotkey: local offline OCR, the result lands in the clipboard.
+
+              --ocr <image> [--out text.txt] [--engine auto|ppocr|windows] [--no-merge]    Recognize text in an image
+              --capture [--out shot.png]                                                   Capture the full screen as PNG
+              --grab-region <x,y,w,h> [--out text.txt] [--no-copy] [--no-merge]            Grab text from a fixed screen region
+              --ocr-burst <image1> [image2 ...] [--out text.txt]                           Pick the best frame from several images
+              --ocr-adaptive <x,y,w,h> [--out text.txt] [--no-copy] [--no-merge]           Adaptive multi-frame grabbing
+              --bench <image> [--n 10]                                                     Measure OCR latency
+              --scan <image> [--out content.txt]                                           Decode a QR/barcode
+              --qr <text> [--out qr.png] [--size 300]                                      Generate a QR code PNG
+              --grab                                                                       Ask the running SnapText to grab
+              --history list|search|add|clear [--n N] [--out text.txt]                     Grab history
+              --loc check                                                                  Verify the three language tables match
+              --help / --version                                                           This help / version
+
+            See README.md for details. --engine values: auto (default) | ppocr | windows.
+            """,
     };
 }

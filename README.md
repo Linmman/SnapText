@@ -1,4 +1,4 @@
-# SnapText — grab any text on screen
+﻿# SnapText — grab any text on screen
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -64,7 +64,7 @@ Every hotkey can be changed, or cleared to disable it entirely, in **Settings** 
 
 ## Command line (optional)
 
-Handy for scripts, launchers and AutoHotkey. `SnapText.exe --help` is not implemented — this is the list:
+Handy for scripts, launchers and AutoHotkey. `SnapText.exe --help` prints the same list:
 
 ```powershell
 SnapText.exe --grab                                        # trigger a grab in the running instance
