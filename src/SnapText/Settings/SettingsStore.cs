@@ -37,7 +37,12 @@ internal static class SettingsStore
         try
         {
             Directory.CreateDirectory(Log.RootDir);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(settings, Options));
+
+            // 先写临时文件再替换：写到一半崩溃不会留下半个（或空的）配置文件
+            var temp = FilePath + ".tmp";
+            File.WriteAllText(temp, JsonSerializer.Serialize(settings, Options));
+            File.Move(temp, FilePath, overwrite: true);
+
             Log.Info("Settings saved to " + FilePath);
         }
         catch (Exception ex)

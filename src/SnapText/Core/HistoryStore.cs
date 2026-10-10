@@ -99,7 +99,34 @@ internal sealed class HistoryStore
         }
     }
 
-    public int Count => Load().Count;
+    /// <summary>
+    /// 当前条数：只数非空行，不反序列化整个文件。
+    /// 前提：WriteAll 每条历史恰好写一行且无空行（temp+move 保证不会留下半行），所以行数=条数。
+    /// </summary>
+    public int Count
+    {
+        get
+        {
+            try
+            {
+                return WithLock(() =>
+                {
+                    if (!File.Exists(FilePath)) return 0;
+                    var count = 0;
+                    foreach (var line in File.ReadLines(FilePath))
+                    {
+                        if (!string.IsNullOrWhiteSpace(line)) count++;
+                    }
+                    return count;
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error("History count failed", ex);
+                return 0;
+            }
+        }
+    }
 
     public void Clear()
     {

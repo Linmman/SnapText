@@ -23,6 +23,9 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
 
     public static string ModelsDir => Path.Combine(AppContext.BaseDirectory, "models", "v5");
 
+    // 模型文件名显式写死：不按"文件名包含 det/cls"模糊匹配，避免目录里文件一多选错模型
+    private static string DetPath => Path.Combine(ModelsDir, "ch_PP-OCRv5_mobile_det.onnx");
+    private static string ClsPath => Path.Combine(ModelsDir, "ch_PP-LCNet_x0_25_textline_ori_cls_mobile.onnx");
     private static string RecPath => Path.Combine(ModelsDir, "ch_PP-OCRv5_rec_mobile.onnx");
     private static string DictPath => Path.Combine(ModelsDir, "ppocrv5_dict.txt");
 
@@ -33,8 +36,8 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
             if (_unavailable) return false;
             try
             {
-                return File.Exists(FindByToken("det"))
-                       && File.Exists(FindByToken("cls"))
+                return File.Exists(DetPath)
+                       && File.Exists(ClsPath)
                        && File.Exists(RecPath)
                        && File.Exists(DictPath);
             }
@@ -97,7 +100,7 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
         try
         {
             var session = new RapidOcr();
-            session.InitModels(FindByToken("det"), FindByToken("cls"), RecPath, DictPath);
+            session.InitModels(DetPath, ClsPath, RecPath, DictPath);
             _session = session;
             Log.Info($"PP-OCR session initialized (models: {ModelsDir}).");
             return session;
@@ -125,16 +128,6 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
             _session = null;
             Log.Info("PP-OCR session released (idle 60s).");
         }
-    }
-
-    private static string FindByToken(string token)
-    {
-        if (!Directory.Exists(ModelsDir))
-            return Path.Combine(ModelsDir, "missing.onnx");
-
-        var file = Directory.EnumerateFiles(ModelsDir, "*.onnx")
-            .FirstOrDefault(f => Path.GetFileName(f).Contains(token, StringComparison.OrdinalIgnoreCase));
-        return file ?? Path.Combine(ModelsDir, "missing.onnx");
     }
 
     private static SKBitmap? ToSkBitmap(Bitmap image)
