@@ -20,7 +20,7 @@ Please include:
 - `winver` output, monitor count and display scale (e.g. 150 %), SnapText version, and the OCR engine you selected;
 - the tail of `%LOCALAPPDATA%\SnapText\logs\app-*.log`.
 
-> ⚠️ **Read the log before posting it.** The log can contain fragments of the text you grabbed — redact anything private.
+> ⚠️ **Read the log before posting it.** The log can contain fragments of the text you grabbed — redact anything private. The grab history (`%LOCALAPPDATA%\SnapText\history.jsonl`) stores the same texts in plain text — same caution.
 
 Known non-bugs: on a locked desktop no hotkey and no clipboard access works (Windows blocks both), and HDR / exclusive-fullscreen capture is a documented limitation.
 

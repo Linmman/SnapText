@@ -24,7 +24,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/smoke-e2e.ps1
 dotnet publish src/SnapText/SnapText.csproj -c Release -r win-x64 --self-contained true -o dist/SnapText
 
 # 压缩为分发包
-Compress-Archive -Path dist/SnapText/* -DestinationPath dist/SnapText-v0.1.0-win-x64.zip -Force
+Compress-Archive -Path dist/SnapText/* -DestinationPath dist/SnapText-vX.Y.Z-win-x64.zip -Force
 
 # 生成校验和（写进 Release 说明，便于用户核对）
 certutil -hashfile dist/SnapText-v0.1.0-win-x64.zip SHA256
@@ -40,8 +40,8 @@ certutil -hashfile dist/SnapText-v0.1.0-win-x64.zip SHA256
 
 ```powershell
 git add -A
-git commit -m "release: v0.1.0"
-git tag -a v0.1.0 -m "SnapText v0.1.0"
+git commit -m "release: vX.Y.Z"
+git tag -a vX.Y.Z -m "SnapText vX.Y.Z"
 git push origin main --tags
 ```
 
@@ -79,11 +79,11 @@ git push origin main --tags
 创建步骤：
 
 1. 打开 `https://github.com/<你的用户名>/SnapText/releases/new`；
-2. 选择刚推送的 tag（或新建同名 tag），标题填 `v0.1.0`，贴入上面的说明模板（替换版本号与 SHA256）；
+2. 选择刚推送的 tag（或新建同名 tag），标题填 `vX.Y.Z`，贴入上面的说明模板（替换版本号与 SHA256）；
 3. 上传 `dist/SnapText-v0.1.0-win-x64.zip`；
 4. 发布。
 
-> 本机没有 `gh` CLI：用 API 建 Release / 传附件（token 从 git 凭据管理器取）的可用做法见项目记忆 `snaptext-release-publishing.md`。
+> 本机没有 `gh` CLI：可用 GitHub API 创建 Release 并上传附件（token 来自本机 git 凭据管理器；注意不要把 token 写进任何文件或命令输出）。
 
 ## 5. 发布后检查
 

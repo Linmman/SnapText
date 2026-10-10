@@ -102,7 +102,7 @@ src/SnapText/
 
 设置里可选「跟随系统 / 中文 / 日本語 / English」，覆盖托盘菜单、轻提示、设置/结果/历史窗口、框选提示与 CLI 输出。
 
-- **为什么是编译进程序的字典，而不是 .resx/附属程序集**：只有三种语言、约 120 个键，规模很小；字典（`Localization/Strings.cs`）没有打包与加载失败面，也避开了 `dotnet publish` 的 `SatelliteResourceLanguages=en` 可能过滤 zh/ja 附属程序集的问题。缺键时 `Loc.T` 回退 en → 键名并记一条 WARN 日志，界面永不空白。
+- **为什么是编译进程序的字典，而不是 .resx/附属程序集**：只有三种语言、116 个键，规模很小；字典（`Localization/Strings.cs`）没有打包与加载失败面，也避开了 `dotnet publish` 的 `SatelliteResourceLanguages=en` 可能过滤 zh/ja 附属程序集的问题。缺键时 `Loc.T` 回退 en → 键名并记一条 WARN 日志，界面永不空白。
 - **怎么做到"改完即生效"**：所有窗口都是按需新建的（XAML 里 `{loc:Loc Key}` 在窗口构造时取值），常驻的只有托盘菜单——它暴露 `ApplyLanguage()`，由控制器在设置保存后刷新文案；语言在 `ApplySettings()` 里最先初始化，后续提示就是新语言。
 - **日志不本地化**：日志保持中文（排查手册、issue 模板都按中文日志编写）。
 - **验证**：`SnapText.exe --loc check` 校验三语言键集合一致（缺键列出、退出码 1）；`tools/smoke-loc.ps1` 再校验三语言 CLI 输出互不相同、且三种语言各启动一次应用且日志零 `Missing UI string`。

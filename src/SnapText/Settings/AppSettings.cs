@@ -11,7 +11,7 @@ internal sealed class AppSettings
     /// <summary>打开链接用的程序（留空 = 系统默认浏览器）。填 exe 路径，链接会作为参数传入。</summary>
     public string LinkOpener { get; set; } = "";
 
-    /// <summary>OCR 引擎：auto | windows | ppocr（ppocr 待接入）。</summary>
+    /// <summary>OCR 引擎：auto（优先 PP-OCR 本地，失败回落系统 OCR）| windows | ppocr。</summary>
     public string Engine { get; set; } = "auto";
 
     /// <summary>识别后静默复制到剪贴板（false 时弹出可编辑结果窗口）。</summary>
