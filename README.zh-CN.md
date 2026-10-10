@@ -1,4 +1,4 @@
-﻿# SnapText · 屏幕取字
+# SnapText · 屏幕取字
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -27,7 +27,7 @@ SnapText 把这串步骤压成一步：**热键 → 框选 → 粘贴**。配合
 |---|---|
 | 系统要求 | Windows 10 / 11，64 位 |
 | 下载 | [Releases](../../releases) → 解压 → 运行 `SnapText.exe` |
-| 安装方式 | 免安装：解压即用，只有 `%LOCALAPPDATA%\SnapText` 和 `图片\SnapText` 会写入文件 |
+| 安装方式 | 免安装：解压即用，只有 `%LOCALAPPDATA%\SnapText` 和 `图片\SnapText` 会写入文件（开启"开机自启"会额外写一条 HKCU Run 注册表项） |
 | .NET | 不需要 —— 发布包自带运行时 |
 | 体积 | 解压后约 210MB（含 .NET 运行时和离线 OCR 模型） |
 

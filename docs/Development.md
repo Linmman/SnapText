@@ -1,4 +1,4 @@
-﻿# 开发与验证
+# 开发与验证
 
 > 面向**维护者与贡献者**的文档。使用者请看 [README](../README.zh-CN.md)；贡献流程见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 > 架构细节见 [Architecture.md](Architecture.md)，发版流程见 [Release.md](Release.md)。
@@ -95,7 +95,7 @@ src/SnapText/
 - ✅ 取字历史端到端落盘：真实热键 → 框选 → OCR → 剪贴板 后，历史文件新增 1 条（`source=ocr`）；随后同一文本再取一次，历史保持 1 条（去重生效）
 - ✅ GDI+ 并发修复：修复前连续两次 e2e 中 PP-OCR 抛 `Object is currently in use elsewhere` 并静默回落系统 OCR（识别质量下降）；修复后连续两次 e2e 均命中 PP-OCRv5（conf=0.968，无回落）
 - ⏸ 托盘「最近取字」子菜单的**点击复制**、以及「搜索历史…」面板的点击/输入：路径简单（点条目 → 写剪贴板 + 轻提示），暂无自动化点击测试，待手动过一遍（与「打开链接」按钮同级别）
-- ✅ 界面语言（`tools/smoke-loc.ps1`，8/8 PASS）：三语言文案表键集合一致（120 键 × 3 语言）；CLI 输出随 `SNAPTEXT_LANG` 切换且三种语言互不相同；zh/ja/en 各启动一次应用，日志均无 `Missing UI string`、托盘创建成功
+- ✅ 界面语言（`tools/smoke-loc.ps1`，8/8 PASS）：三语言文案表键集合一致（116 键 × 3 语言）；CLI 输出随 `SNAPTEXT_LANG` 切换且三种语言互不相同；zh/ja/en 各启动一次应用，日志均无 `Missing UI string`、托盘创建成功
 - ⏸ 设置窗口「界面语言」下拉选择与"保存后即时切换"：UI 交互无自动化测试，待手动过一遍（语言解析与 CLI 同源，已被上面的脚本覆盖）
 
 ## 六、README 三语同步规则
@@ -105,5 +105,5 @@ src/SnapText/
 - 改动用户可见行为时，**先改英文版**，再同步中/日文；
 - 来不及翻译时，在中文/日文版本顶部保留"以英文版为准"的说明即可，不要留半截不一致的内容；
 - 作者向的细节（构建、验证、结构）一律放本文件，不要写回 README。
-- 演示素材（放 `docs/images/`）：静态图 ≤300KB、宽 1200-1440px；**GIF ≤2MB**（宽 900-1000px、10-12fps、3-6 秒；用 ffmpeg 调色板两步法压缩：`fps=12,scale=900:-1,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`）。超过 ~5MB 就别用 GIF——改用 GitHub 附件方式嵌 MP4（在网页版编辑 README，把 mp4 拖进编辑框，会生成可点播的视频链接）。
+- 演示素材（放 `docs/images/`）：整屏截图 ≤300KB、宽 1200-1440px；**局部 UI 元素截图（如提示条）按元素实际尺寸出图、≤300KB**；**GIF ≤2MB**（宽 900-1000px、10-12fps、3-6 秒；用 ffmpeg 调色板两步法压缩：`fps=12,scale=900:-1,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`）。超过 ~5MB 就别用 GIF——改用 GitHub 附件方式嵌 MP4（在网页版编辑 README，把 mp4 拖进编辑框，会生成可点播的视频链接）。
 - 演示素材只用公开内容；**不要出现聊天记录、邮箱、个人信息**。

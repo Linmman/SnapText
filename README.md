@@ -1,4 +1,4 @@
-﻿# SnapText — grab any text on screen
+# SnapText — grab any text on screen
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -27,7 +27,7 @@ SnapText collapses that into one step: **hotkey → drag → paste**. Pair it wi
 |---|---|
 | System | Windows 10 / 11, 64-bit |
 | Download | [Releases](../../releases) → unzip → run `SnapText.exe` |
-| Installer | None. It is a portable folder; nothing is written outside `%LOCALAPPDATA%\SnapText` and `Pictures\SnapText` |
+| Installer | None. It is a portable folder; nothing is written outside `%LOCALAPPDATA%\SnapText` and `Pictures\SnapText` (enabling run-at-login adds one `HKCU\...\Run` registry entry) |
 | .NET | Not required — the build is self-contained |
 | Size | ~210 MB unpacked (bundled .NET runtime + offline OCR models) |
 

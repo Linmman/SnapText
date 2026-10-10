@@ -1,4 +1,4 @@
-﻿# SnapText — 画面上の文字をそのまま取得
+# SnapText — 画面上の文字をそのまま取得
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -27,7 +27,7 @@ SnapText はそれを 1 手に縮めます：**ホットキー → 囲む → �
 |---|---|
 | 対応 OS | Windows 10 / 11（64 ビット） |
 | ダウンロード | [Releases](../../releases) → 展開 → `SnapText.exe` を実行 |
-| インストール | 不要（ポータブル）。書き込むのは `%LOCALAPPDATA%\SnapText` と `ピクチャ\SnapText` だけです |
+| インストール | 不要（ポータブル）。書き込むのは `%LOCALAPPDATA%\SnapText` と `ピクチャ\SnapText` だけです（スタートアップ登録時に HKCU Run のレジストリ値を 1 つ追加） |
 | .NET | 不要 — ランタイム同梱の自己完結ビルドです |
 | サイズ | 展開後およそ 210MB（.NET ランタイムとオフライン OCR モデルを含む） |
 

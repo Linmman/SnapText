@@ -1,0 +1,13 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+# 项目约定：C# / XAML / PowerShell 带 BOM（PowerShell 5.1 无 BOM 会按 GBK 解码），Markdown / 工程文件不带
+[*.{cs,xaml,ps1}]
+charset = utf-8-bom
+
+[*.{md,csproj,slnx}]
+charset = utf-8
