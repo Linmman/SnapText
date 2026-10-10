@@ -3,6 +3,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using RapidOcrNet;
 using SkiaSharp;
+using SnapText.Localization;
 
 namespace SnapText.Ocr;
 
@@ -18,7 +19,7 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
     private Timer? _idleTimer;
     private bool _unavailable;
 
-    public string Name => "PP-OCRv5 本地";
+    public string Name => Loc.T("Ocr_PpLocal");
 
     public static string ModelsDir => Path.Combine(AppContext.BaseDirectory, "models", "v5");
 
@@ -52,7 +53,7 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
 
             using var prepared = OcrPreprocess.Prepare(image);
             using var skBitmap = ToSkBitmap(prepared)
-                                 ?? throw new InvalidOperationException("OCR 预处理失败（位图转换）。");
+                                 ?? throw new InvalidOperationException(Loc.T("Err_Preprocess"));
 
             lock (_gate)
             {
@@ -90,7 +91,7 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
         if (!IsAvailable)
         {
             _unavailable = true;
-            throw new InvalidOperationException($"PP-OCR 模型缺失：{ModelsDir}");
+            throw new InvalidOperationException(Loc.T("Err_ModelMissing", ModelsDir));
         }
 
         try

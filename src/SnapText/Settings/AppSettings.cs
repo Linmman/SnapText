@@ -31,4 +31,7 @@ internal sealed class AppSettings
 
     /// <summary>记录取字历史（仅存本机 %LOCALAPPDATA%\SnapText\history.jsonl，最多 200 条）。</summary>
     public bool SaveHistory { get; set; } = true;
+
+    /// <summary>界面语言：auto（跟随系统，缺省）| zh | ja | en。</summary>
+    public string Language { get; set; } = "auto";
 }

@@ -7,6 +7,7 @@ using SnapText.Core;
 using SnapText.Interop;
 using ZXing;
 using ZXing.QrCode;
+using SnapText.Localization;
 using SnapText.Ocr;
 using SnapText.Processing;
 using SnapText.Settings;
@@ -14,10 +15,11 @@ using SnapText.Settings;
 namespace SnapText.Cli;
 
 /// <summary>
-/// 无界面命令行模式：
+/// 无界面命令行模式（文案随界面语言/系统语言，SNAPTEXT_LANG 可强制）：
 ///   SnapText.exe --ocr &lt;图片&gt; [--out 文本.txt] [--no-merge]
 ///   SnapText.exe --capture [--out 截图.png]
 ///   SnapText.exe --history list|search|add|clear（取字历史，供脚本/测试）
+///   SnapText.exe --loc check（校验三语言文案表键集合一致）
 ///   SnapText.exe --version
 /// </summary>
 internal static class CliRunner
@@ -56,6 +58,9 @@ internal static class CliRunner
             case "--history":
                 exitCode = RunHistory(args);
                 return true;
+            case "--loc":
+                exitCode = RunLocCheck(args);
+                return true;
             case "--version":
                 Print("SnapText " + (typeof(CliRunner).Assembly.GetName().Version?.ToString() ?? "0.0.0"));
                 return true;
@@ -69,7 +74,7 @@ internal static class CliRunner
         var path = GetPositional(args, "--out", "--engine").FirstOrDefault();
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
         {
-            Print("用法: SnapText.exe --ocr <图片路径> [--engine auto|ppocr|windows] [--out <输出文本路径>] [--no-merge]");
+            Print(Loc.T("Cli_Usage_Ocr"));
             return 2;
         }
 
@@ -136,7 +141,7 @@ internal static class CliRunner
         var path = args.Skip(1).FirstOrDefault(a => !a.StartsWith("--"));
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
         {
-            Print("用法: SnapText.exe --bench <图片路径> [--engine auto|ppocr|windows] [--n 10]");
+            Print(Loc.T("Cli_Usage_Bench"));
             return 2;
         }
 
@@ -179,11 +184,11 @@ internal static class CliRunner
     {
         if (IpcSignals.TrySignalGrab())
         {
-            Print("OK 已通知正在运行的 SnapText 开始取字");
+            Print(Loc.T("Cli_GrabSignaled"));
             return 0;
         }
 
-        Print("FAILED: 没有正在运行的 SnapText 实例（先启动 SnapText.exe）");
+        Print(Loc.T("Cli_NoInstance"));
         return 1;
     }
 
@@ -193,14 +198,14 @@ internal static class CliRunner
         var spec = GetPositional(args, "--out", "--engine").FirstOrDefault();
         if (string.IsNullOrEmpty(spec))
         {
-            Print("用法: SnapText.exe --grab-region <x,y,w,h> [--engine auto|ppocr|windows] [--out <文本.txt>] [--no-copy] [--no-merge]");
+            Print(Loc.T("Cli_Usage_GrabRegion"));
             return 2;
         }
 
         var parts = spec.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length != 4 || !parts.All(p => int.TryParse(p, out _)))
         {
-            Print("FAILED: 区域格式应为 x,y,w,h（物理像素）");
+            Print(Loc.T("Cli_BadRegion"));
             return 2;
         }
 
@@ -248,7 +253,7 @@ internal static class CliRunner
         var paths = GetPositional(args, "--out", "--engine").ToArray();
         if (paths.Length == 0)
         {
-            Print("用法: SnapText.exe --ocr-burst <图1> [图2 ...] [--engine auto|ppocr|windows] [--out <文本.txt>]");
+            Print(Loc.T("Cli_Usage_OcrBurst"));
             return 2;
         }
 
@@ -261,7 +266,7 @@ internal static class CliRunner
         {
             foreach (var path in paths)
             {
-                if (!File.Exists(path)) { Print($"FAILED: 找不到 {path}"); return 2; }
+                if (!File.Exists(path)) { Print(Loc.T("Cli_FileNotFound", path)); return 2; }
                 bitmaps.Add(new Bitmap(path));
             }
 
@@ -301,7 +306,7 @@ internal static class CliRunner
         var path = GetPositional(args, "--out").FirstOrDefault();
         if (string.IsNullOrEmpty(path) || !File.Exists(path))
         {
-            Print("用法: SnapText.exe --scan <图片路径> [--out <内容.txt>]");
+            Print(Loc.T("Cli_Usage_Scan"));
             return 2;
         }
 
@@ -339,7 +344,7 @@ internal static class CliRunner
         var text = GetPositional(args, "--out", "--size").FirstOrDefault();
         if (string.IsNullOrEmpty(text))
         {
-            Print("用法: SnapText.exe --qr <文本> [--out <二维码.png>] [--size 300]");
+            Print(Loc.T("Cli_Usage_Qr"));
             return 2;
         }
 
@@ -398,7 +403,7 @@ internal static class CliRunner
                 var query = GetPositional(args, 2, "--out", "--n").FirstOrDefault();
                 if (string.IsNullOrEmpty(query))
                 {
-                    Print("用法: SnapText.exe --history search <关键词> [--n 20] [--out <文本.txt>]");
+                    Print(Loc.T("Cli_Usage_HistorySearch"));
                     return 2;
                 }
 
@@ -414,22 +419,46 @@ internal static class CliRunner
                 var text = GetPositional(args, 2, "--out").FirstOrDefault();
                 if (string.IsNullOrEmpty(text))
                 {
-                    Print("用法: SnapText.exe --history add <文本>");
+                    Print(Loc.T("Cli_Usage_HistoryAdd"));
                     return 2;
                 }
 
                 var added = store.Add(text, "cli");
-                Print(added ? "OK 已写入取字历史" : "SKIP 与最近一条相同，未重复写入");
+                Print(added ? Loc.T("Cli_HistoryAdded") : Loc.T("Cli_HistoryDuplicate"));
                 return 0;
             }
             case "clear":
                 store.Clear();
-                Print("OK 已清空取字历史");
+                Print(Loc.T("Cli_HistoryCleared"));
                 return 0;
             default:
-                Print("用法: SnapText.exe --history list|search|add|clear [--n N] [--out <文本.txt>]");
+                Print(Loc.T("Cli_Usage_HistoryVerbs"));
                 return 2;
         }
+    }
+
+    /// <summary>校验三语言文案表（zh/ja/en）键集合一致；缺键则列出并返回 1（供回归脚本/CI）。</summary>
+    private static int RunLocCheck(string[] args)
+    {
+        var verb = args.Length > 1 ? args[1].ToLowerInvariant() : "";
+        if (verb != "check")
+        {
+            Print(Loc.T("Cli_Usage_LocVerbs"));
+            return 2;
+        }
+
+        var missing = Loc.FindMissingKeys();
+        Print($"LANG: {Loc.Language}");
+        Print($"LOC_TOTAL: {Loc.KeyCount}");
+        Print($"LOC_MISSING: {missing.Count}");
+        foreach (var item in missing)
+            Print("missing " + item);
+
+        if (missing.Count > 0)
+            Print(Loc.T("Cli_LocMissing", string.Join(", ", missing)));
+
+        Print(missing.Count == 0 ? "LOC_RESULT: PASS" : "LOC_RESULT: FAIL");
+        return missing.Count == 0 ? 0 : 1;
     }
 
     /// <summary>打印历史条目（时间 | 来源 | 单行文本）；--out 时同时写入 UTF-8 文本；末行为机器可读统计。</summary>
@@ -442,7 +471,7 @@ internal static class CliRunner
         if (!string.IsNullOrEmpty(outPath))
             File.WriteAllText(outPath!, string.Join(Environment.NewLine, lines), new UTF8Encoding(false));
 
-        Print("history file: " + store.FilePath);
+        Print(Loc.T("Cli_HistoryFile", store.FilePath));
         foreach (var line in lines)
             Print(line);
         Print($"{countLabel}: {entries.Count}");

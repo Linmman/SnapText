@@ -6,6 +6,7 @@ using System.Windows;
 using SnapText.Capture;
 using SnapText.Hotkeys;
 using SnapText.Interop;
+using SnapText.Localization;
 using SnapText.Ocr;
 using SnapText.Overlay;
 using SnapText.Processing;
@@ -32,6 +33,7 @@ internal sealed class SnapTextController : IDisposable
 
     private TrayHost? _tray;
     private OverlayManager? _overlay;
+    private HistoryWindow? _historyWindow;
     private ScreenCapture? _pendingCapture;
     private IntPtr _lastForeground = IntPtr.Zero;
     private Rectangle _lastRect;
@@ -40,6 +42,7 @@ internal sealed class SnapTextController : IDisposable
     private Thread? _signalThread;
     private volatile bool _disposed;
     private bool _burstAfterSelection;
+    private string? _appliedLanguage;
 
     public SnapTextController()
     {
@@ -49,9 +52,12 @@ internal sealed class SnapTextController : IDisposable
 
     public void Start()
     {
+        Loc.Initialize(_settings.Language);
+        Log.Info($"UI language: {Loc.Language} (setting={_settings.Language})");
         _tray = new TrayHost(Grab, RepeatLast, GrabBurst, ShowSettings, Exit,
             loadHistory: () => _history.Load(),
             onHistoryItem: CopyHistoryEntry,
+            onHistorySearch: ShowHistory,
             onHistoryClear: ClearHistory);
         ApplySettings();
         StartSignalListener();
@@ -59,31 +65,48 @@ internal sealed class SnapTextController : IDisposable
         Log.Info($"SnapText started. Engine={_ocr.Name}, available={_ocr.IsAvailable}");
         if (!_ocr.IsAvailable)
         {
-            ToastService.Show("OCR 引擎不可用",
-                "未找到 PP-OCR 模型（models/v5），系统 OCR 也没有可用语言包。请检查程序目录完整性。");
+            ToastService.Show(Loc.T("Toast_EngineUnavailable_Title"), Loc.T("Toast_EngineUnavailable_Body"));
         }
         else
         {
             var body = HotkeyService.IsDisabled(_settings.GrabHotkey)
-                ? "热键已关闭 · 托盘图标左键取字 / 右键菜单"
-                : $"按 {_settings.GrabHotkey} 框选取字 · 其余功能在托盘图标右键菜单";
-            ToastService.Show("SnapText 已启动", body);
+                ? Loc.T("Toast_Started_NoHotkey")
+                : Loc.T("Toast_Started_Body", _settings.GrabHotkey);
+            ToastService.Show(Loc.T("Toast_Started_Title"), body);
         }
     }
 
     private void ApplySettings()
     {
+        var languageChanged = _appliedLanguage is not null &&
+                              !string.Equals(_appliedLanguage, _settings.Language, StringComparison.OrdinalIgnoreCase);
+
+        Loc.Initialize(_settings.Language);   // 语言可能在设置里改过：先应用，后续提示/菜单才会用新语言
+        _appliedLanguage = _settings.Language;
+
         _hotkeys.UnregisterAll();
         _ocr.UpdateSettings(_settings);
+        _tray?.ApplyLanguage();
 
         if (!_hotkeys.Register(_settings.GrabHotkey, Grab, out var error))
-            ToastService.Show("热键注册失败", error);
+            ToastService.Show(Loc.T("Toast_HotkeyRegisterFailed_Title"), error);
         if (!_hotkeys.Register(_settings.RepeatHotkey, RepeatLast, out error))
-            ToastService.Show("热键注册失败", error);
+            ToastService.Show(Loc.T("Toast_HotkeyRegisterFailed_Title"), error);
         if (!_hotkeys.Register(_settings.BurstHotkey, GrabBurst, out error))
-            ToastService.Show("热键注册失败", error);
+            ToastService.Show(Loc.T("Toast_HotkeyRegisterFailed_Title"), error);
 
         AutoStart.Apply(_settings.AutoStart);
+
+        if (languageChanged)
+        {
+            var nameKey = Loc.Language switch
+            {
+                "ja" => "Language_Ja",
+                "en" => "Language_En",
+                _ => "Language_Zh"
+            };
+            ToastService.Show(Loc.T("Toast_LanguageChanged_Title"), Loc.T(nameKey));
+        }
     }
 
     /// <summary>监听 IPC 信号：SnapText.exe --grab 可让已运行的实例开始取字（供脚本/AutoHotkey 触发）。</summary>
@@ -146,7 +169,7 @@ internal sealed class SnapTextController : IDisposable
         {
             Log.Error("Grab failed", ex);
             CleanupPending();
-            ToastService.Show("取字失败", ex.Message);
+            ToastService.Show(Loc.T("Toast_GrabFailed_Title"), ex.Message);
         }
     }
 
@@ -230,7 +253,7 @@ internal sealed class SnapTextController : IDisposable
     {
         try
         {
-            ToastService.Show("连拍取字…", "连续采样多帧，完成后自动进剪贴板", region);
+            ToastService.Show(Loc.T("Toast_Burst_Title"), Loc.T("Toast_Burst_Body"), region);
 
             var started = Environment.TickCount64;
             var outcome = await BurstRunner.RunAsync(region, _ocr);
@@ -243,7 +266,7 @@ internal sealed class SnapTextController : IDisposable
 
             if (text.Length == 0)
             {
-                ToastService.Show("未识别到文字", "连拍也没抓到文字：把区域框得更紧凑，或等画面稳一点再试。", region);
+                ToastService.Show(Loc.T("Toast_NoText_Title"), Loc.T("Toast_NoText_Burst_Body"), region);
                 return;
             }
 
@@ -253,7 +276,7 @@ internal sealed class SnapTextController : IDisposable
         catch (Exception ex)
         {
             Log.Error("Burst failed", ex);
-            ToastService.Show("连拍取字失败", ex.Message, region);
+            ToastService.Show(Loc.T("Toast_BurstFailed_Title"), ex.Message, region);
         }
     }
 
@@ -266,7 +289,7 @@ internal sealed class SnapTextController : IDisposable
 
             if (!_hasLastRect)
             {
-                ToastService.Show("还没有可重复的区域", $"先按 {_settings.GrabHotkey} 框选一次。");
+                ToastService.Show(Loc.T("Toast_NoRegion_Title"), Loc.T("Toast_NoRegion_Body", _settings.GrabHotkey));
                 return;
             }
 
@@ -318,7 +341,7 @@ internal sealed class SnapTextController : IDisposable
             }
 
             if (outcome is null)
-                throw ocrError ?? new InvalidOperationException("OCR 失败。");
+                throw ocrError ?? new InvalidOperationException(Loc.T("Err_OcrFailed"));
 
             var text = UrlHelper.Normalize(PostProcessor.Clean(outcome.Text, _settings.MergeLines));
             var lowConfidence = outcome.Confidence is { } confidence && confidence < LowConfidenceThreshold;
@@ -330,7 +353,7 @@ internal sealed class SnapTextController : IDisposable
 
             if (text.Length == 0)
             {
-                ToastService.Show("未识别到文字", "把区域框得更紧凑一些，或换一帧画面再试。", rect);
+                ToastService.Show(Loc.T("Toast_NoText_Title"), Loc.T("Toast_NoText_Body"), rect);
                 return;
             }
 
@@ -339,7 +362,7 @@ internal sealed class SnapTextController : IDisposable
         catch (Exception ex)
         {
             Log.Error("OCR pipeline failed", ex);
-            ToastService.Show("识别失败", ex.Message, rect);
+            ToastService.Show(Loc.T("Toast_OcrFailed_Title"), ex.Message, rect);
         }
         finally
         {
@@ -368,15 +391,15 @@ internal sealed class SnapTextController : IDisposable
 
         var title = copied
             ? isCode
-                ? "已复制二维码内容"
-                : lowConfidence ? "已复制（识别可能不准，建议核对）" : "已复制到剪贴板"
-            : "复制失败（剪贴板被占用）";
+                ? Loc.T("Toast_Copied_Code")
+                : lowConfidence ? Loc.T("Toast_Copied_LowConfidence") : Loc.T("Toast_Copied")
+            : Loc.T("Toast_CopyFailed_Title");
 
         ToastService.Show(
             title,
             Preview(text),
             rect,
-            actionLabel: url is null ? null : "打开链接",
+            actionLabel: url is null ? null : Loc.T("Toast_OpenLink"),
             action: url is null ? null : () => OpenUrl(url));
     }
 
@@ -405,7 +428,7 @@ internal sealed class SnapTextController : IDisposable
         catch (Exception ex)
         {
             Log.Error("Open url failed: " + url, ex);
-            ToastService.Show("打不开链接", $"{url}（检查设置里的「打开链接的程序」）");
+            ToastService.Show(Loc.T("Toast_OpenLinkFailed_Title"), Loc.T("Toast_OpenLinkFailed_Body", url));
         }
     }
 
@@ -465,24 +488,48 @@ internal sealed class SnapTextController : IDisposable
         }
     }
 
+    /// <summary>托盘「最近取字 → 搜索历史…」：按需打开历史面板（只在用户点击时出现，永不自动弹出）。</summary>
+    private void ShowHistory()
+    {
+        try
+        {
+            if (_historyWindow is { } existing)
+            {
+                existing.Activate();
+                return;
+            }
+
+            var returnTo = Win32.GetForegroundWindow();   // 复制完成后把焦点还给打开面板之前的窗口
+            var window = new HistoryWindow(_history, returnTo);
+            _historyWindow = window;
+            window.Closed += (_, _) => _historyWindow = null;
+            window.Show();
+            window.Activate();
+        }
+        catch (Exception ex)
+        {
+            Log.Error("ShowHistory failed", ex);
+        }
+    }
+
     /// <summary>托盘「最近取字」：把某条历史复制回剪贴板（复制旧记录不改变历史顺序）。</summary>
     private void CopyHistoryEntry(HistoryEntry entry)
     {
         if (!ClipboardService.TrySetText(entry.Text))
         {
-            ToastService.Show("复制失败（剪贴板被占用）", "稍后重试即可，记录还在历史里。");
+            ToastService.Show(Loc.T("Toast_CopyFailed_Title"), Loc.T("Toast_History_CopyFailed_Body"));
             return;
         }
 
         Log.Info($"History: copied entry ({entry.Text.Length} chars).");
-        ToastService.Show("已复制历史文本", HistoryStore.ToSingleLine(entry.Text));
+        ToastService.Show(Loc.T("Toast_History_Copied_Title"), HistoryStore.ToSingleLine(entry.Text));
     }
 
     /// <summary>托盘「最近取字 → 清空历史」。</summary>
     private void ClearHistory()
     {
         _history.Clear();
-        ToastService.Show("已清空取字历史", "之后的取字还会继续记录。");
+        ToastService.Show(Loc.T("Toast_History_Cleared_Title"), Loc.T("Toast_History_Cleared_Body"));
     }
 
     /// <summary>把最终交付的文本记入取字历史（设置里可关；失败只记日志，不打扰主流程）。</summary>

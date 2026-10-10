@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using SnapText.Localization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
 using Windows.Storage.Streams;
@@ -16,7 +17,7 @@ internal sealed class WindowsOcrEngine : IOcrEngine
     private OcrEngine? _engine;
     private bool _resolved;
 
-    public string Name => "Windows OCR";
+    public string Name => Loc.T("Ocr_Windows");
 
     public bool IsAvailable => Resolve() is not null;
 
@@ -60,8 +61,7 @@ internal sealed class WindowsOcrEngine : IOcrEngine
 
     public async Task<OcrOutcome> RecognizeAsync(Bitmap image, CancellationToken cancellationToken = default)
     {
-        var engine = Resolve() ?? throw new InvalidOperationException(
-            "系统 OCR 不可用：请在「设置 → 时间和语言 → 语言和区域 → 中文(简体) → 语言选项」中安装“光学字符识别”。");
+        var engine = Resolve() ?? throw new InvalidOperationException(Loc.T("WindowsOcr_Unavailable"));
 
         using var prepared = OcrPreprocess.Prepare(image);
 

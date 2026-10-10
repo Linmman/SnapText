@@ -8,7 +8,7 @@ Every new capability has to satisfy all three, or it does not ship:
 
 1. **Zero configuration by default** — install and use; no switch to flip, no engine to pick, no rules to author.
 2. **Zero added steps** — the main flow is always "hotkey → drag".
-3. **No new interrupting UI** — reuse the existing toast; never a dialog, never a new window.
+3. **No new interrupting UI** — reuse the existing toast; nothing may ever appear *on its own*. (Panels the user explicitly opens, like Settings and the history search panel, are fine — never a dialog or window that pops up unprompted.)
 
 Details, plus what is explicitly out of scope, are in [docs/Development.md](docs/Development.md). The reasoning behind the architecture is in [docs/Architecture.md](docs/Architecture.md).
 
@@ -51,6 +51,7 @@ Example: `fix: 带「打开链接」的提示停留 6 秒（原来 2.6 秒来不
 
 ## Documentation and translations
 
+- Every user-visible string lives in `src/SnapText/Localization/Strings.cs` (Chinese / Japanese / English tables). Add or change it in **all three** tables; `SnapText.exe --loc check` (or `tools\smoke-loc.ps1`) fails if the tables drift apart. Log files stay Chinese on purpose (the troubleshooting guide and issue template are written against them).
 - `README.md` (English) is the source of truth; then sync [README.zh-CN.md](README.zh-CN.md) and [README.ja.md](README.ja.md). If a translation lags, keep the "English version is canonical" note rather than leaving half-translated content.
 - Author-facing material (build, test scripts, verification records, project layout) belongs in `docs/`, **not** in the README — the README is for users who just want to install and use the tool.
 - The other docs are Chinese-only today. Translating [docs/Troubleshooting.md](docs/Troubleshooting.md) would be a genuinely useful first PR.

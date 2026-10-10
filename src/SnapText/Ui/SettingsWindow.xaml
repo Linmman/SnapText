@@ -2,15 +2,26 @@
         x:ClassModifier="internal"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="SnapText 设置"
+        xmlns:loc="clr-namespace:SnapText.Localization"
+        Title="{loc:Loc Settings_Title}"
         Width="470" SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize">
     <StackPanel Margin="18">
 
-        <TextBlock Text="快捷键（示例：Ctrl+Alt+Q，支持 A-Z / 0-9 / F1-F12；留空 = 关闭该快捷键）"
-                   FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
-        <TextBlock Text="「连拍取字」用于视频播放中取字：连抓几帧选最干净的一帧，比单帧慢约半秒。"
+        <TextBlock Text="{loc:Loc Settings_Language}" FontWeight="SemiBold" Margin="0,0,0,8" />
+        <ComboBox x:Name="LanguageCombo" Height="26"
+                  AutomationProperties.Name="{loc:Loc Settings_Language}">
+            <ComboBoxItem Content="{loc:Loc Language_Auto}" />
+            <ComboBoxItem Content="{loc:Loc Language_Zh}" />
+            <ComboBoxItem Content="{loc:Loc Language_Ja}" />
+            <ComboBoxItem Content="{loc:Loc Language_En}" />
+        </ComboBox>
+        <TextBlock Text="{loc:Loc Settings_LanguageHint}" Foreground="#FF6B6B6B" FontSize="11"
+                   Margin="0,4,0,0" TextWrapping="Wrap" />
+
+        <TextBlock Text="{loc:Loc Settings_HotkeysHint}" FontWeight="SemiBold" Margin="0,16,0,8" TextWrapping="Wrap" />
+        <TextBlock Text="{loc:Loc Settings_BurstHint}"
                    Foreground="#FF6B6B6B" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap" />
 
         <Grid>
@@ -24,54 +35,54 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="取字" VerticalAlignment="Center" Margin="0,0,0,8" />
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="{loc:Loc Tray_Grab}" VerticalAlignment="Center" Margin="0,0,0,8" />
             <TextBox x:Name="GrabHotkeyBox" Grid.Row="0" Grid.Column="1" Height="26" Margin="0,0,0,8" VerticalContentAlignment="Center"
-                     AutomationProperties.Name="取字热键" />
+                     AutomationProperties.Name="{loc:Loc A11y_Hotkey_Grab}" />
 
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="重复上次区域" VerticalAlignment="Center" Margin="0,0,0,8" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="{loc:Loc Tray_RepeatLast}" VerticalAlignment="Center" Margin="0,0,0,8" />
             <TextBox x:Name="RepeatHotkeyBox" Grid.Row="1" Grid.Column="1" Height="26" Margin="0,0,0,8" VerticalContentAlignment="Center"
-                     AutomationProperties.Name="重复上次区域热键" />
+                     AutomationProperties.Name="{loc:Loc A11y_Hotkey_Repeat}" />
 
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="连拍取字" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="{loc:Loc Tray_Burst}" VerticalAlignment="Center" />
             <TextBox x:Name="BurstHotkeyBox" Grid.Row="2" Grid.Column="1" Height="26" VerticalContentAlignment="Center"
-                     AutomationProperties.Name="连拍取字热键" />
+                     AutomationProperties.Name="{loc:Loc A11y_Hotkey_Burst}" />
         </Grid>
 
-        <TextBlock Text="识别引擎" FontWeight="SemiBold" Margin="0,16,0,8" />
-        <ComboBox x:Name="EngineCombo" Height="26" AutomationProperties.Name="识别引擎">
-            <ComboBoxItem Content="自动（优先 PP-OCR 本地，失败回落系统 OCR）" />
-            <ComboBoxItem Content="PP-OCRv5 本地（推荐：中文、视频字幕更准）" />
-            <ComboBoxItem Content="Windows 系统 OCR（不装模型，纯英文场景快）" />
+        <TextBlock Text="{loc:Loc Settings_Engine}" FontWeight="SemiBold" Margin="0,16,0,8" />
+        <ComboBox x:Name="EngineCombo" Height="26" AutomationProperties.Name="{loc:Loc Settings_Engine}">
+            <ComboBoxItem Content="{loc:Loc Engine_Auto}" />
+            <ComboBoxItem Content="{loc:Loc Engine_Pp}" />
+            <ComboBoxItem Content="{loc:Loc Engine_Windows}" />
         </ComboBox>
 
-        <TextBlock Text="打开链接的程序" FontWeight="SemiBold" Margin="0,16,0,8" />
+        <TextBlock Text="{loc:Loc Settings_LinkOpener}" FontWeight="SemiBold" Margin="0,16,0,8" />
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBox x:Name="LinkOpenerBox" Grid.Column="0" Height="26" VerticalContentAlignment="Center"
-                     AutomationProperties.Name="打开链接的程序路径" />
-            <Button Grid.Column="1" Content="浏览…" Width="72" Height="26" Margin="8,0,0,0"
+                     AutomationProperties.Name="{loc:Loc Settings_LinkOpener}" />
+            <Button Grid.Column="1" Content="{loc:Loc Common_Browse}" Width="72" Height="26" Margin="8,0,0,0"
                     Click="OnBrowseLinkOpenerClick" />
         </Grid>
-        <TextBlock Text="留空 = 系统默认浏览器；也可以指定某个 exe（例如另一个浏览器），链接会作为参数传给它。"
+        <TextBlock Text="{loc:Loc Settings_LinkOpenerHint}"
                    Foreground="#FF6B6B6B" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
 
-        <CheckBox x:Name="SilentCopyCheck" Content="识别后静默复制到剪贴板（不弹出结果窗口）" Margin="0,16,0,0"
-                  AutomationProperties.Name="识别后静默复制到剪贴板" />
-        <CheckBox x:Name="MergeLinesCheck" Content="多行合并为一整行（适合视频字幕、整句提取）" Margin="0,8,0,0"
-                  AutomationProperties.Name="多行合并为一整行" />
-        <CheckBox x:Name="SaveCaptureCheck" Content="同时把截图保存为 PNG（图片\SnapText 目录）" Margin="0,8,0,0"
-                  AutomationProperties.Name="同时保存截图" />
-        <CheckBox x:Name="SaveHistoryCheck" Content="保存取字历史（仅存本机，最多 200 条；托盘菜单「最近取字」可查看和清空）"
-                  Margin="0,8,0,0" AutomationProperties.Name="保存取字历史" />
-        <CheckBox x:Name="AutoStartCheck" Content="开机自动启动" Margin="0,8,0,0"
-                  AutomationProperties.Name="开机自动启动" />
+        <CheckBox x:Name="SilentCopyCheck" Content="{loc:Loc Settings_SilentCopy}" Margin="0,16,0,0"
+                  AutomationProperties.Name="{loc:Loc Settings_SilentCopy}" />
+        <CheckBox x:Name="MergeLinesCheck" Content="{loc:Loc Settings_MergeLines}" Margin="0,8,0,0"
+                  AutomationProperties.Name="{loc:Loc Settings_MergeLines}" />
+        <CheckBox x:Name="SaveCaptureCheck" Content="{loc:Loc Settings_SaveCapture}" Margin="0,8,0,0"
+                  AutomationProperties.Name="{loc:Loc Settings_SaveCapture}" />
+        <CheckBox x:Name="SaveHistoryCheck" Content="{loc:Loc Settings_SaveHistory}"
+                  Margin="0,8,0,0" AutomationProperties.Name="{loc:Loc Settings_SaveHistory}" />
+        <CheckBox x:Name="AutoStartCheck" Content="{loc:Loc Settings_AutoStart}" Margin="0,8,0,0"
+                  AutomationProperties.Name="{loc:Loc Settings_AutoStart}" />
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-            <Button Content="保存" Width="96" Height="30" Margin="0,0,8,0" Click="OnSaveClick" IsDefault="True" />
-            <Button Content="取消" Width="80" Height="30" Click="OnCancelClick" IsCancel="True" />
+            <Button Content="{loc:Loc Common_Save}" Width="96" Height="30" Margin="0,0,8,0" Click="OnSaveClick" IsDefault="True" />
+            <Button Content="{loc:Loc Common_Cancel}" Width="80" Height="30" Click="OnCancelClick" IsCancel="True" />
         </StackPanel>
     </StackPanel>
 </Window>

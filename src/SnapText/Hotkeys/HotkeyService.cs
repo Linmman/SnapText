@@ -1,5 +1,6 @@
 ﻿using System.Windows.Interop;
 using SnapText.Interop;
+using SnapText.Localization;
 
 namespace SnapText.Hotkeys;
 
@@ -45,7 +46,7 @@ internal sealed class HotkeyService : IDisposable
         var id = _nextId++;
         if (!Win32.RegisterHotKey(_source.Handle, id, modifiers | Win32.MOD_NOREPEAT, virtualKey))
         {
-            error = $"热键 {hotkey} 注册失败（可能已被其他程序占用）";
+            error = Loc.T("Hotkey_RegisterFailed", hotkey);
             return false;
         }
 
@@ -118,7 +119,7 @@ internal sealed class HotkeyService : IDisposable
 
         if (string.IsNullOrWhiteSpace(hotkey))
         {
-            error = "热键不能为空";
+            error = Loc.T("Hotkey_Empty");
             return false;
         }
 
@@ -144,7 +145,7 @@ internal sealed class HotkeyService : IDisposable
                 default:
                     if (key.Length > 0)
                     {
-                        error = $"热键 '{hotkey}' 里有多个主按键";
+                        error = Loc.T("Hotkey_MultipleMains", hotkey);
                         return false;
                     }
                     key = part;
@@ -154,20 +155,20 @@ internal sealed class HotkeyService : IDisposable
 
         if (key.Length == 0)
         {
-            error = $"热键 '{hotkey}' 缺少主按键";
+            error = Loc.T("Hotkey_NoMain", hotkey);
             return false;
         }
 
         virtualKey = ResolveKey(key);
         if (virtualKey == 0)
         {
-            error = $"无法识别的按键 '{key}'";
+            error = Loc.T("Hotkey_UnknownKey", key);
             return false;
         }
 
         if (modifiers == 0)
         {
-            error = "至少需要一个修饰键（Ctrl / Alt / Shift / Win）";
+            error = Loc.T("Hotkey_NeedModifier");
             return false;
         }
 

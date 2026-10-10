@@ -1,0 +1,71 @@
+﻿<Window x:Class="SnapText.Ui.HistoryWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:SnapText.Localization"
+        Title="{loc:Loc Hist_Title}"
+        Width="560" Height="500"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <TextBox x:Name="SearchBox" Height="28" VerticalContentAlignment="Center"
+                     TextChanged="OnSearchTextChanged"
+                     AutomationProperties.Name="{loc:Loc Hist_A11y_Search}" />
+            <TextBlock x:Name="SearchHint" Text="{loc:Loc Hist_SearchHint}"
+                       Foreground="#FF9A9A9A" Margin="8,0,0,0" VerticalAlignment="Center"
+                       IsHitTestVisible="False" />
+        </Grid>
+
+        <Border Grid.Row="1" BorderBrush="#FFD0D0D0" BorderThickness="1" CornerRadius="3">
+            <Grid>
+                <ListBox x:Name="EntryList" BorderThickness="0"
+                         SelectionChanged="OnSelectionChanged"
+                         MouseDoubleClick="OnListMouseDoubleClick"
+                         AutomationProperties.Name="{loc:Loc Hist_A11y_List}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ToolTip="{Binding Full}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="104" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{Binding Time}"
+                                           Foreground="#FF8A8A8A" FontSize="11" />
+                                <TextBlock Grid.Column="1" Text="{Binding Preview}"
+                                           TextTrimming="CharacterEllipsis" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock x:Name="EmptyHint" Text="{loc:Loc Hist_Empty}"
+                           Foreground="#FF9A9A9A"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           IsHitTestVisible="False" Visibility="Collapsed" />
+            </Grid>
+        </Border>
+
+        <TextBox x:Name="PreviewBox" Grid.Row="2" Height="86" Margin="0,10,0,0" IsReadOnly="True"
+                 TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                 AutomationProperties.Name="{loc:Loc Hist_A11y_Preview}" />
+
+        <DockPanel Grid.Row="3" Margin="0,10,0,0">
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button x:Name="ClearButton" Content="{loc:Loc Tray_HistoryClear}" Width="96" Height="28" Margin="0,0,8,0"
+                        Click="OnClearClick" AutomationProperties.Name="{loc:Loc Tray_HistoryClear}" />
+                <Button x:Name="CopyButton" Content="{loc:Loc Result_CopyClose}" Width="104" Height="28" Margin="0,0,8,0"
+                        Click="OnCopyClick" IsDefault="True" AutomationProperties.Name="{loc:Loc Result_CopyClose}" />
+                <Button Content="{loc:Loc Common_Close}" Width="72" Height="28" Click="OnCloseClick" IsCancel="True" />
+            </StackPanel>
+            <TextBlock x:Name="CountText" Foreground="#FF8A8A8A" FontSize="11"
+                       VerticalAlignment="Center" TextWrapping="Wrap" />
+        </DockPanel>
+    </Grid>
+</Window>

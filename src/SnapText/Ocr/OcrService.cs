@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using SnapText.Localization;
 using SnapText.Settings;
 
 namespace SnapText.Ocr;
@@ -23,7 +24,7 @@ internal sealed class OcrService : IOcrEngine, IDisposable
     {
         "windows" => _windows.Name,
         "ppocr" => _pp.Name,
-        _ => _pp.IsAvailable ? $"{_pp.Name}（自动）" : $"{_windows.Name}（自动回落）"
+        _ => _pp.IsAvailable ? _pp.Name + Loc.T("Ocr_Auto") : _windows.Name + Loc.T("Ocr_AutoFallback")
     };
 
     public bool IsAvailable => _pp.IsAvailable || _windows.IsAvailable;
@@ -47,7 +48,7 @@ internal sealed class OcrService : IOcrEngine, IDisposable
             }
         }
 
-        throw lastError ?? new InvalidOperationException("没有可用的 OCR 引擎。");
+        throw lastError ?? new InvalidOperationException(Loc.T("Err_NoEngine"));
     }
 
     private IEnumerable<IOcrEngine> CreateEngineOrder()

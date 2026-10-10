@@ -20,24 +20,21 @@
         </Border.Effect>
         <Grid>
             <StackPanel Margin="0,0,16,0">
-                <TextBlock x:Name="TitleText" Foreground="#FF8FD3FF" FontSize="12" FontWeight="SemiBold"
-                           Text="已复制到剪贴板" />
+                <TextBlock x:Name="TitleText" Foreground="#FF8FD3FF" FontSize="12" FontWeight="SemiBold" />
                 <TextBlock x:Name="BodyText" Foreground="#FFF2F2F2" FontSize="13"
                            TextWrapping="Wrap" Margin="0,5,0,0" MaxHeight="96" />
                 <Border x:Name="ActionArea" Visibility="Collapsed" Margin="0,9,0,0"
                         HorizontalAlignment="Left" Background="#3300A8FF" CornerRadius="6"
                         Padding="11,5" Cursor="Hand"
-                        AutomationProperties.Name="打开链接"
                         MouseLeftButtonUp="OnActionClick">
-                    <TextBlock x:Name="ActionText" Foreground="#FF9FE0FF" FontSize="12" Text="打开链接" />
+                    <TextBlock x:Name="ActionText" Foreground="#FF9FE0FF" FontSize="12" />
                 </Border>
             </StackPanel>
 
-            <!-- 关闭按钮：提示可能挡住屏幕上的东西，随时可点掉 -->
+            <!-- 关闭按钮：提示可能挡住屏幕上的东西，随时可点掉（文案由代码按界面语言设置） -->
             <Border x:Name="CloseArea" Width="18" Height="18"
                     HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-4,-6,0"
-                    CornerRadius="4" Cursor="Hand" ToolTip="关闭"
-                    AutomationProperties.Name="关闭提示"
+                    CornerRadius="4" Cursor="Hand"
                     MouseLeftButtonUp="OnCloseButtonClick">
                 <Border.Style>
                     <Style TargetType="Border">

@@ -2,6 +2,8 @@
 using System.Windows;
 using SnapText.Cli;
 using SnapText.Core;
+using SnapText.Localization;
+using SnapText.Settings;
 
 namespace SnapText;
 
@@ -21,6 +23,9 @@ public partial class App : Application
         };
         AppDomain.CurrentDomain.UnhandledException += (_, args) =>
             Log.Error("Unhandled exception", args.ExceptionObject as Exception);
+
+        // 最早的界面语言初始化：CLI 输出、启动失败提示等都用它（SNAPTEXT_LANG 可强制）
+        Loc.Initialize(SettingsStore.Load().Language);
 
         // 无界面模式（--ocr / --capture / --version）：即使已有实例在运行也可执行
         if (CliRunner.TryRun(e.Args, out var exitCode))
@@ -45,7 +50,7 @@ public partial class App : Application
         catch (Exception ex)
         {
             Log.Error("Startup failed", ex);
-            MessageBox.Show(ex.ToString(), "SnapText 启动失败", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.ToString(), Loc.T("App_StartupFailed"), MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }
     }

@@ -7,6 +7,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using SnapText.Capture;
 using SnapText.Interop;
+using SnapText.Localization;
 
 namespace SnapText.Ui;
 
@@ -25,6 +26,10 @@ internal partial class ToastWindow : Window
         BodyText.Text = body;
         _anchor = anchor;
         _action = action;
+
+        // 关闭按钮的提示与无障碍名称随界面语言（XAML 里不再写死）
+        CloseArea.ToolTip = Loc.T("Common_Close");
+        AutomationProperties.SetName(CloseArea, Loc.T("Toast_A11y_Close"));
 
         if (actionLabel is not null && action is not null)
         {

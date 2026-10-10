@@ -47,13 +47,14 @@ Windows may show a SmartScreen warning the first time (the app is not code-signe
 | Tray left-click | Same as `Ctrl+Alt+Q` |
 | `Esc` / right-click | Cancel the selection |
 
-Every hotkey can be changed, or cleared to disable it entirely, in **Settings** (tray → right-click → Settings). Settings also cover: OCR engine, silent copy vs. an editable result window, joining lines into one sentence, which program opens links, run at login, whether the last 200 grabs are kept locally, and optionally saving the screenshot.
+Every hotkey can be changed, or cleared to disable it entirely, in **Settings** (tray → right-click → Settings). Settings also cover: interface language (中文 / 日本語 / English — follows Windows by default), OCR engine, silent copy vs. an editable result window, joining lines into one sentence, which program opens links, run at login, whether the last 200 grabs are kept locally, and optionally saving the screenshot.
 
 ## What it can do
 
 - **Grab with one hotkey** — freeze the screen first, so selecting is not a race against a moving video. Focus returns to your window when it is done.
 - **Copy that does not lie** — the write is retried and read back; if it fails you are told, instead of seeing "copied" and pasting nothing.
-- **Recent grabs, one click away** — every grab (burst and QR included) is remembered in a local file (last 200, consecutive duplicates collapsed). Tray right-click → **Recent grabs** lists the latest 15; click one to put it back on the clipboard. Nothing pops up and nothing needs configuring, and the history can be turned off or cleared from the same menu.
+- **Recent grabs, one click away** — every grab (burst and QR included) is remembered in a local file (last 200, consecutive duplicates collapsed). Tray right-click → **Recent grabs** lists the latest 15; click one to put it back on the clipboard, or pick **Search history…** for a small searchable panel (it opens only when you ask — nothing ever pops up on its own). The history can be turned off or cleared from the same menu.
+- **Speaks your language** — the tray menu, notifications, settings, result window and selection hint come in Chinese, Japanese or English. It follows your Windows language out of the box, and switching in Settings takes effect right away.
 - **QR and barcode** — select a code and its content is decoded and copied (runs alongside OCR, so it costs no extra time).
 - **Links** — if the result contains a URL, the notification offers **Open link** (your default browser, or any program you choose). A result that *is* a link gets stray spaces removed and `https://` completed; mixed text is never rewritten.
 - **Chinese-aware cleanup** — the phantom spaces OCR inserts between Chinese characters are removed; multiple lines can be joined into one sentence.

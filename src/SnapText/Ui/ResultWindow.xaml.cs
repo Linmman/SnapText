@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using SnapText.Core;
+using SnapText.Localization;
 
 namespace SnapText.Ui;
 
@@ -28,7 +29,7 @@ internal partial class ResultWindow : Window
         var text = ResultBox.Text;
         if (!ClipboardService.TrySetText(text))
         {
-            MessageBox.Show(this, "写入剪贴板失败，请重试。", "SnapText", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, Loc.T("Err_ClipboardWrite"), "SnapText", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
         _onCopied?.Invoke(text);
