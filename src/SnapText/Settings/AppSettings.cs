@@ -2,11 +2,14 @@
 
 internal sealed class AppSettings
 {
-    /// <summary>取字热键。</summary>
+    /// <summary>取字热键（留空 = 关闭该热键）。</summary>
     public string GrabHotkey { get; set; } = "Ctrl+Alt+Q";
 
-    /// <summary>重复上次区域热键。</summary>
+    /// <summary>重复上次区域热键（留空 = 关闭该热键）。</summary>
     public string RepeatHotkey { get; set; } = "Ctrl+Alt+R";
+
+    /// <summary>打开链接用的程序（留空 = 系统默认浏览器）。填 exe 路径，链接会作为参数传入。</summary>
+    public string LinkOpener { get; set; } = "";
 
     /// <summary>OCR 引擎：auto | windows | ppocr（ppocr 待接入）。</summary>
     public string Engine { get; set; } = "auto";

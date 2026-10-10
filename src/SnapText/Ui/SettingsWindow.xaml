@@ -8,8 +8,8 @@
         ResizeMode="NoResize">
     <StackPanel Margin="18">
 
-        <TextBlock Text="快捷键（示例：Ctrl+Alt+Q，支持 A-Z / 0-9 / F1-F12）"
-                   FontWeight="SemiBold" Margin="0,0,0,8" />
+        <TextBlock Text="快捷键（示例：Ctrl+Alt+Q，支持 A-Z / 0-9 / F1-F12；留空 = 关闭该快捷键）"
+                   FontWeight="SemiBold" Margin="0,0,0,8" TextWrapping="Wrap" />
 
         <Grid>
             <Grid.ColumnDefinitions>
@@ -36,6 +36,20 @@
             <ComboBoxItem Content="PP-OCRv5 本地（推荐：中文、视频字幕更准）" />
             <ComboBoxItem Content="Windows 系统 OCR（不装模型，纯英文场景快）" />
         </ComboBox>
+
+        <TextBlock Text="打开链接的程序" FontWeight="SemiBold" Margin="0,16,0,8" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="LinkOpenerBox" Grid.Column="0" Height="26" VerticalContentAlignment="Center"
+                     AutomationProperties.Name="打开链接的程序路径" />
+            <Button Grid.Column="1" Content="浏览…" Width="72" Height="26" Margin="8,0,0,0"
+                    Click="OnBrowseLinkOpenerClick" />
+        </Grid>
+        <TextBlock Text="留空 = 系统默认浏览器；也可以指定某个 exe（例如另一个浏览器），链接会作为参数传给它。"
+                   Foreground="#FF6B6B6B" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
 
         <CheckBox x:Name="SilentCopyCheck" Content="识别后静默复制到剪贴板（不弹出结果窗口）" Margin="0,16,0,0"
                   AutomationProperties.Name="识别后静默复制到剪贴板" />

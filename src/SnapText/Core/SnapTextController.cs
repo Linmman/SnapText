@@ -59,8 +59,16 @@ internal sealed class SnapTextController : IDisposable
         }
         else
         {
-            ToastService.Show("SnapText 已启动",
-                $"按 {_settings.GrabHotkey} 框选取字 · {_settings.RepeatHotkey} 重复上次区域 · 托盘图标右键可设置/退出");
+            var hints = new List<string>();
+            if (!HotkeyService.IsDisabled(_settings.GrabHotkey))
+                hints.Add($"按 {_settings.GrabHotkey} 框选取字");
+            if (!HotkeyService.IsDisabled(_settings.RepeatHotkey))
+                hints.Add($"{_settings.RepeatHotkey} 重复上次区域");
+
+            var body = hints.Count > 0
+                ? string.Join(" · ", hints) + " · 托盘图标右键可设置/退出"
+                : "两个热键都已关闭 · 托盘图标左键取字 / 右键设置";
+            ToastService.Show("SnapText 已启动", body);
         }
     }
 
@@ -292,17 +300,32 @@ internal sealed class SnapTextController : IDisposable
             action: url is null ? null : () => OpenUrl(url));
     }
 
-    private static void OpenUrl(string url)
+    /// <summary>打开链接：默认交给系统默认浏览器（http/https 关联程序）；设置里指定了程序则用指定程序。</summary>
+    private void OpenUrl(string url)
     {
         try
         {
-            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
-            Log.Info("Opened url: " + url);
+            var opener = _settings.LinkOpener;
+            if (!string.IsNullOrWhiteSpace(opener))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = opener,
+                    Arguments = $"\"{url}\"",
+                    UseShellExecute = true
+                });
+                Log.Info($"Opened url with custom opener ({opener}): {url}");
+            }
+            else
+            {
+                Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+                Log.Info("Opened url with default browser: " + url);
+            }
         }
         catch (Exception ex)
         {
             Log.Error("Open url failed: " + url, ex);
-            ToastService.Show("打不开链接", url);
+            ToastService.Show("打不开链接", $"{url}（检查设置里的「打开链接的程序」）");
         }
     }
 

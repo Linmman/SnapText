@@ -18,6 +18,7 @@ internal partial class SettingsWindow : Window
 
         GrabHotkeyBox.Text = settings.GrabHotkey;
         RepeatHotkeyBox.Text = settings.RepeatHotkey;
+        LinkOpenerBox.Text = settings.LinkOpener;
         EngineCombo.SelectedIndex = settings.Engine?.ToLowerInvariant() switch
         {
             "ppocr" => 1,
@@ -32,20 +33,25 @@ internal partial class SettingsWindow : Window
 
     private void OnSaveClick(object sender, RoutedEventArgs e)
     {
-        if (!HotkeyService.TryParse(GrabHotkeyBox.Text, out _, out _, out var error))
+        var grabHotkey = GrabHotkeyBox.Text.Trim();
+        var repeatHotkey = RepeatHotkeyBox.Text.Trim();
+
+        // 留空 = 关闭该热键（合法），只有填了内容才校验格式
+        if (!HotkeyService.IsDisabled(grabHotkey) && !HotkeyService.TryParse(grabHotkey, out _, out _, out var grabError))
         {
-            MessageBox.Show(this, "取字热键无效：" + error, "SnapText", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, "取字热键无效：" + grabError, "SnapText", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        if (!HotkeyService.TryParse(RepeatHotkeyBox.Text, out _, out _, out error))
+        if (!HotkeyService.IsDisabled(repeatHotkey) && !HotkeyService.TryParse(repeatHotkey, out _, out _, out var repeatError))
         {
-            MessageBox.Show(this, "重复上次区域热键无效：" + error, "SnapText", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show(this, "重复上次区域热键无效：" + repeatError, "SnapText", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
 
-        _settings.GrabHotkey = GrabHotkeyBox.Text.Trim();
-        _settings.RepeatHotkey = RepeatHotkeyBox.Text.Trim();
+        _settings.GrabHotkey = grabHotkey;
+        _settings.RepeatHotkey = repeatHotkey;
+        _settings.LinkOpener = LinkOpenerBox.Text.Trim();
         _settings.Engine = EngineCombo.SelectedIndex switch
         {
             1 => "ppocr",
@@ -60,6 +66,22 @@ internal partial class SettingsWindow : Window
         SettingsStore.Save(_settings);
         _onSaved();
         Close();
+    }
+
+    private void OnBrowseLinkOpenerClick(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "选择用来打开链接的程序",
+            Filter = "可执行文件 (*.exe)|*.exe|所有文件 (*.*)|*.*",
+            CheckFileExists = true
+        };
+
+        if (System.IO.File.Exists(LinkOpenerBox.Text))
+            dialog.FileName = LinkOpenerBox.Text;
+
+        if (dialog.ShowDialog(this) == true)
+            LinkOpenerBox.Text = dialog.FileName;
     }
 
     private void OnCancelClick(object sender, RoutedEventArgs e) => Close();

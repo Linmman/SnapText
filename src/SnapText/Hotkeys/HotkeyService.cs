@@ -26,9 +26,19 @@ internal sealed class HotkeyService : IDisposable
         _source.AddHook(WndProc);
     }
 
+    /// <summary>空/空白 = 不使用该热键（合法配置；比强制填一个更符合"用不上就关掉"）。</summary>
+    public static bool IsDisabled(string? hotkey) => string.IsNullOrWhiteSpace(hotkey);
+
     public bool Register(string hotkey, Action action, out string error)
     {
         error = string.Empty;
+
+        if (IsDisabled(hotkey))
+        {
+            Log.Info("Hotkey is empty; treated as disabled.");
+            return true;
+        }
+
         if (!TryParse(hotkey, out var modifiers, out var virtualKey, out error))
             return false;
 
