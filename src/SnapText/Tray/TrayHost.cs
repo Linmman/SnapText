@@ -1,6 +1,5 @@
 ﻿using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Text;
+using System.Windows;
 using System.Windows.Controls;
 using H.NotifyIcon;
 using SnapText.Core;
@@ -146,28 +145,13 @@ internal sealed class TrayHost : IDisposable
         }
     }
 
+    /// <summary>加载嵌入的 SnapText.ico（与 exe 的 ApplicationIcon 同一份文件）。</summary>
     private static Icon CreateTrayIcon()
     {
-        using var bitmap = new Bitmap(32, 32);
-        using (var g = Graphics.FromImage(bitmap))
-        {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
-
-            using var background = new SolidBrush(Color.FromArgb(255, 0, 120, 215));
-            g.FillEllipse(background, 0, 0, 31, 31);
-
-            // 图标上的“字”是品牌标记，不随界面语言变化
-            using var font = new Font("Microsoft YaHei UI", 17f, FontStyle.Bold, GraphicsUnit.Pixel);
-            const string glyph = "字";
-            var size = g.MeasureString(glyph, font);
-            using var foreground = new SolidBrush(Color.White);
-            g.DrawString(glyph, font, foreground, (32 - size.Width) / 2f, (32 - size.Height) / 2f);
-        }
-
-        // 句柄随进程存活（只创建一次，不主动销毁）
-        var handle = bitmap.GetHicon();
-        return Icon.FromHandle(handle);
+        var resource = Application.GetResourceStream(new Uri("pack://application:,,,/SnapText.ico"))
+                       ?? throw new InvalidOperationException("SnapText.ico resource missing");
+        using var stream = resource.Stream;
+        return new Icon(stream);
     }
 
     public void Dispose()

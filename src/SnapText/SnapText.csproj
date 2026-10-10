@@ -11,6 +11,7 @@
     <AssemblyName>SnapText</AssemblyName>
     <RootNamespace>SnapText</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>SnapText.ico</ApplicationIcon>
     <PlatformTarget>x64</PlatformTarget>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <Version>0.2.0</Version>
@@ -21,6 +22,11 @@
   <ItemGroup>
     <!-- 单元测试直接覆盖 internal 纯函数（tests/SnapText.Tests） -->
     <InternalsVisibleTo Include="SnapText.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 托盘图标与 exe 图标共用同一份 .ico（pack URI 加载） -->
+    <Resource Include="SnapText.ico" />
   </ItemGroup>
 
   <ItemGroup>
