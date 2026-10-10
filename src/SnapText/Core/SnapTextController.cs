@@ -345,8 +345,10 @@ internal sealed class SnapTextController : IDisposable
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = opener,
-                    Arguments = $"\"{url}\"",
-                    UseShellExecute = true
+                    UseShellExecute = true,
+                    // url 来自 OCR 文本：必须走 ArgumentList（框架负责转义），
+                    // 否则文本里夹一个 " 就能往自定义打开程序里注入额外参数
+                    ArgumentList = { url }
                 });
                 Log.Info($"Opened url with custom opener ({opener}): {url}");
             }

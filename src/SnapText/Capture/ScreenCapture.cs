@@ -59,9 +59,11 @@ internal sealed class ScreenCapture : IDisposable
         var clamped = Rectangle.Intersect(local, new Rectangle(0, 0, Bitmap.Width, Bitmap.Height));
         if (clamped.Width <= 0) clamped = new Rectangle(Math.Max(0, local.X), Math.Max(0, local.Y), 1, 1);
 
-        var output = new Bitmap(local.Width, local.Height, PixelFormat.Format32bppArgb);
+        // 目标尺寸必须用 clamped：若用 local（未裁剪）尺寸，选区越界时 DrawImage 会把
+        // 源区域拉伸填满更大的位图，OCR 结果跟着失真
+        var output = new Bitmap(clamped.Width, clamped.Height, PixelFormat.Format32bppArgb);
         using var g = Graphics.FromImage(output);
-        g.DrawImage(Bitmap, new Rectangle(0, 0, local.Width, local.Height), clamped, GraphicsUnit.Pixel);
+        g.DrawImage(Bitmap, new Rectangle(0, 0, clamped.Width, clamped.Height), clamped, GraphicsUnit.Pixel);
         return output;
     }
 
