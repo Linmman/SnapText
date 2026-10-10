@@ -1,4 +1,4 @@
-# SnapText — grab any text on screen
+﻿# SnapText — grab any text on screen
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -19,7 +19,7 @@ SnapText collapses that into one step: **hotkey → drag → paste**. Pair it wi
 - **Tuned for Chinese video.** Subtitles on Douyin/Bilibili and the URLs that flash by are exactly the hard case: a Chinese-optimised engine reads them, and links are repaired instead of mangled.
 - **Out of your way.** Lives in the tray, grabs without a window, and returns focus to your app so the next keystroke can be `Ctrl+V`.
 
-<!-- TODO(author): screenshots. Put 1–2 of your own (overlay / toast) into docs/images/ and link them here. Never include anything private. -->
+![SnapText in action: hotkey → drag over the text → it is copied](docs/images/demo.gif)
 
 ## Download and install
 
@@ -37,6 +37,8 @@ Windows may show a SmartScreen warning the first time (the app is not code-signe
 
 1. Run `SnapText.exe` — a blue **字** icon appears in the tray.
 2. Press `Ctrl+Alt+Q`, drag around the text, release. Done — paste with `Ctrl+V`.
+
+   ![Copied — with an **Open link** button when the text contains a URL](docs/images/toast.png)
 3. Right-click the tray icon for the menu (repeat last region, **recent grabs**, Settings); left-click to grab again.
 
 | Hotkey | What it does |

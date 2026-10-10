@@ -1,4 +1,4 @@
-# SnapText · 屏幕取字
+﻿# SnapText · 屏幕取字
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
@@ -37,6 +37,8 @@ SnapText 把这串步骤压成一步：**热键 → 框选 → 粘贴**。配合
 
 1. 运行 `SnapText.exe`，托盘出现蓝色 **字** 图标。
 2. 按 `Ctrl+Alt+Q`，框住文字，松手 —— 完事，`Ctrl+V` 粘贴。
+
+   ![已复制到剪贴板；识别到网址时会附「打开链接」按钮](docs/images/toast.png)
 3. 托盘图标：左键再取一次，右键出菜单（重复上次区域、**最近取字**、设置…）。
 
 | 热键 | 作用 |
