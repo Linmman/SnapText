@@ -16,3 +16,8 @@
 *.jpg   binary
 *.7z    binary
 *.zip   binary
+
+# 演示素材等媒体文件
+*.gif   binary
+*.webp  binary
+*.mp4   binary
