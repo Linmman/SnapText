@@ -37,7 +37,7 @@ Windows may show a SmartScreen warning the first time (the app is not code-signe
 
 1. Run `SnapText.exe` — a blue **字** icon appears in the tray.
 2. Press `Ctrl+Alt+Q`, drag around the text, release. Done — paste with `Ctrl+V`.
-3. Right-click the tray icon for the menu; left-click to grab again.
+3. Right-click the tray icon for the menu (repeat last region, burst grab, **recent grabs**, Settings); left-click to grab again.
 
 | Hotkey | What it does |
 |---|---|
@@ -47,12 +47,13 @@ Windows may show a SmartScreen warning the first time (the app is not code-signe
 | Tray left-click | Same as `Ctrl+Alt+Q` |
 | `Esc` / right-click | Cancel the selection |
 
-Every hotkey can be changed, or cleared to disable it entirely, in **Settings** (tray → right-click → Settings). Settings also cover: OCR engine, silent copy vs. an editable result window, joining lines into one sentence, which program opens links, run at login, and optionally saving the screenshot.
+Every hotkey can be changed, or cleared to disable it entirely, in **Settings** (tray → right-click → Settings). Settings also cover: OCR engine, silent copy vs. an editable result window, joining lines into one sentence, which program opens links, run at login, whether the last 200 grabs are kept locally, and optionally saving the screenshot.
 
 ## What it can do
 
 - **Grab with one hotkey** — freeze the screen first, so selecting is not a race against a moving video. Focus returns to your window when it is done.
 - **Copy that does not lie** — the write is retried and read back; if it fails you are told, instead of seeing "copied" and pasting nothing.
+- **Recent grabs, one click away** — every grab (burst and QR included) is remembered in a local file (last 200, consecutive duplicates collapsed). Tray right-click → **Recent grabs** lists the latest 15; click one to put it back on the clipboard. Nothing pops up and nothing needs configuring, and the history can be turned off or cleared from the same menu.
 - **QR and barcode** — select a code and its content is decoded and copied (runs alongside OCR, so it costs no extra time).
 - **Links** — if the result contains a URL, the notification offers **Open link** (your default browser, or any program you choose). A result that *is* a link gets stray spaces removed and `https://` completed; mixed text is never rewritten.
 - **Chinese-aware cleanup** — the phantom spaces OCR inserts between Chinese characters are removed; multiple lines can be joined into one sentence.
@@ -70,6 +71,9 @@ SnapText.exe --ocr shot.png --engine ppocr --out r.txt     # OCR a file (no tray
 SnapText.exe --scan qr.png                                 # decode a QR / barcode
 SnapText.exe --qr "https://example.com" --out qr.png       # generate a QR code
 SnapText.exe --capture --out screen.png                    # capture the whole desktop
+SnapText.exe --history list --n 20                         # recent grabs, newest first
+SnapText.exe --history search <text>                       # search the grab history
+SnapText.exe --history clear                               # clear the grab history
 ```
 
 Options: `--engine auto|ppocr|windows`, `--no-merge` (keep line breaks), `--no-copy` (do not touch the clipboard).

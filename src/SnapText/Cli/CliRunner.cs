@@ -17,6 +17,7 @@ namespace SnapText.Cli;
 /// 无界面命令行模式：
 ///   SnapText.exe --ocr &lt;图片&gt; [--out 文本.txt] [--no-merge]
 ///   SnapText.exe --capture [--out 截图.png]
+///   SnapText.exe --history list|search|add|clear（取字历史，供脚本/测试）
 ///   SnapText.exe --version
 /// </summary>
 internal static class CliRunner
@@ -51,6 +52,9 @@ internal static class CliRunner
                 return true;
             case "--qr":
                 exitCode = RunQr(args);
+                return true;
+            case "--history":
+                exitCode = RunHistory(args);
                 return true;
             case "--version":
                 Print("SnapText " + (typeof(CliRunner).Assembly.GetName().Version?.ToString() ?? "0.0.0"));
@@ -371,15 +375,94 @@ internal static class CliRunner
     }
 
     /// <summary>
+    /// 取字历史（供脚本与自动化测试）：list / search / add / clear。
+    /// 与应用共用同一存储（默认 %LOCALAPPDATA%\SnapText\history.jsonl）；
+    /// 测试可用环境变量 SNAPTEXT_HISTORY_FILE 指向临时文件、SNAPTEXT_HISTORY_MAX 缩小条数上限，不动真实历史。
+    /// </summary>
+    private static int RunHistory(string[] args)
+    {
+        var verb = args.Length > 1 ? args[1].ToLowerInvariant() : "";
+        var store = new HistoryStore();
+        var outPath = GetOption(args, "--out");
+        var limit = int.TryParse(GetOption(args, "--n"), out var n) && n > 0 ? n : int.MaxValue;
+
+        switch (verb)
+        {
+            case "list":
+            {
+                PrintHistory(store, store.Load().Take(limit).ToList(), outPath, "HISTORY_COUNT");
+                return 0;
+            }
+            case "search":
+            {
+                var query = GetPositional(args, 2, "--out", "--n").FirstOrDefault();
+                if (string.IsNullOrEmpty(query))
+                {
+                    Print("用法: SnapText.exe --history search <关键词> [--n 20] [--out <文本.txt>]");
+                    return 2;
+                }
+
+                var hits = store.Load()
+                    .Where(e => e.Text.Contains(query, StringComparison.OrdinalIgnoreCase))
+                    .Take(limit)
+                    .ToList();
+                PrintHistory(store, hits, outPath, "HISTORY_MATCH");
+                return 0;
+            }
+            case "add":
+            {
+                var text = GetPositional(args, 2, "--out").FirstOrDefault();
+                if (string.IsNullOrEmpty(text))
+                {
+                    Print("用法: SnapText.exe --history add <文本>");
+                    return 2;
+                }
+
+                var added = store.Add(text, "cli");
+                Print(added ? "OK 已写入取字历史" : "SKIP 与最近一条相同，未重复写入");
+                return 0;
+            }
+            case "clear":
+                store.Clear();
+                Print("OK 已清空取字历史");
+                return 0;
+            default:
+                Print("用法: SnapText.exe --history list|search|add|clear [--n N] [--out <文本.txt>]");
+                return 2;
+        }
+    }
+
+    /// <summary>打印历史条目（时间 | 来源 | 单行文本）；--out 时同时写入 UTF-8 文本；末行为机器可读统计。</summary>
+    private static void PrintHistory(HistoryStore store, List<HistoryEntry> entries, string? outPath, string countLabel)
+    {
+        var lines = entries
+            .Select(e => $"{e.Time:yyyy-MM-dd HH:mm:ss}\t[{e.Source}]\t{HistoryStore.ToSingleLine(e.Text, 500)}")
+            .ToList();
+
+        if (!string.IsNullOrEmpty(outPath))
+            File.WriteAllText(outPath!, string.Join(Environment.NewLine, lines), new UTF8Encoding(false));
+
+        Print("history file: " + store.FilePath);
+        foreach (var line in lines)
+            Print(line);
+        Print($"{countLabel}: {entries.Count}");
+        Print($"HISTORY_CAP: {store.MaxEntries}");
+    }
+
+    /// <summary>
     /// 取位置参数（跳过 --flag 以及带取值的 --flag 的取值）。
     /// 之前用「第一个不以 -- 开头」的做法，会把 --out 的文件名误当成输入。
     /// </summary>
-    private static List<string> GetPositional(string[] args, params string[] valueFlags)
+    private static List<string> GetPositional(string[] args, params string[] valueFlags) =>
+        GetPositional(args, 1, valueFlags);
+
+    /// <summary>从 startIndex 起取位置参数（子命令用，例如 --history search &lt;关键词&gt;）。</summary>
+    private static List<string> GetPositional(string[] args, int startIndex, params string[] valueFlags)
     {
         var flags = new HashSet<string>(valueFlags, StringComparer.OrdinalIgnoreCase);
         var result = new List<string>();
 
-        for (var i = 1; i < args.Length; i++)
+        for (var i = startIndex; i < args.Length; i++)
         {
             if (args[i].StartsWith("--"))
             {

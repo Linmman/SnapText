@@ -7,10 +7,11 @@
 ```
 src/SnapText/
 ├─ App.xaml(.cs)            进程入口：单实例、CLI 分流、异常兜底
-├─ Cli/CliRunner.cs         无界面命令：--ocr / --capture / --bench / --grab / --grab-region / --scan / --qr
+├─ Cli/CliRunner.cs         无界面命令：--ocr / --capture / --bench / --grab / --grab-region / --scan / --qr / --history
 ├─ Core/
 │   ├─ SnapTextController   总控：热键 → 截屏 → 框选 → OCR/扫码 → 剪贴板 → 提示 → 归还焦点
 │   ├─ ClipboardService     写剪贴板：重试 + 读回校验
+│   ├─ HistoryStore         取字历史：本地 JSONL（最多 200 条，跨进程互斥）
 │   └─ IpcSignals           `--grab` 用的命名事件（Local\SnapText.Grab）
 ├─ Capture/
 │   ├─ ScreenCapture        GDI 冻结帧：整屏/区域抓取与裁剪（物理像素）
@@ -27,7 +28,7 @@ src/SnapText/
 │   └─ CodeScanner         二维码/条码（ZXing，全格式 + TryHarder/TryInverted）
 ├─ Hotkeys/                全局热键（RegisterHotKey + 消息窗口）与字符串解析/冲突检测
 ├─ Settings/               settings.json、开机自启（HKCU Run）、MIT 说明
-├─ Tray/                   托盘图标（运行时生成"字"图标）+ 菜单
+├─ Tray/                   托盘图标（运行时生成"字"图标）+ 菜单（取字 / 重复上次区域 / 连拍取字 / 最近取字 / 设置 / 退出）
 └─ Ui/                     轻提示 Toast（可带「打开链接」）、结果窗、设置窗
 ```
 
@@ -37,6 +38,7 @@ src/SnapText/
 |---|---|
 | 日志 | `%LOCALAPPDATA%\SnapText\logs\app-yyyyMMdd.log` |
 | 配置 | `%LOCALAPPDATA%\SnapText\settings.json` |
+| 取字历史 | `%LOCALAPPDATA%\SnapText\history.jsonl`（明文 JSONL，最多 200 条） |
 | 可选截图 | `图片\SnapText\yyyyMMdd-HHmmss.png` |
 
 ## 二、一次取字的完整链路
@@ -74,6 +76,7 @@ src/SnapText/
 | **提示不抢焦点** | Toast 用 `WS_EX_NOACTIVATE`+`ToolWindow`，可点击（含按钮）但不激活，不打断输入 |
 | **文本净化** | 中文之间空格是 OCR 拆词的产物，直接删；字幕多行按标点合并成整句 |
 | **链接修复只作用于"整段是链接"** | 最安全的边界：混合文本绝不改动原文，只在提示里提供「打开链接」；两段式（链接被空格断成两截）才合并，且第二段必须"像链接碎片"（含数字或点） |
+| **扫码与 OCR 各用独立位图** | 两条路径并行读同一张 GDI+ 位图会抛 `Object is currently in use elsewhere`（实测导致 PP-OCR 静默回落到系统 OCR、或二维码漏检）；扫码线程改用 `Clone()` 副本，并行度不变、线程安全 |
 
 ### 连拍取字（M5）
 
@@ -82,6 +85,15 @@ src/SnapText/
 - **为什么不做"多数投票"**：滚动/切换中的字幕，不同帧内容本来就不同，投票会选出"上一句"；用户要的始终是"此刻屏幕上是什么"。
 - **为什么是单独热键**：连拍要跑多次 OCR（约 1.1s），不能拖慢日常单帧取字（约 0.45s）。画面静止时应该用普通取字。
 - **已知不做**：把跨帧滚动的文字拼成一整句（需要按文本行位置对齐 + 重叠检测，收益低、复杂度高）。
+
+### 取字历史（M5-B）
+
+每次"真正交付"的取字结果（静默复制、连拍、二维码；非静默模式在用户点「复制」时）追加到本地 `history.jsonl`：
+
+- **存储**：一行一条 JSON（`ts` / `text` / `source`），**不引入数据库依赖**（自包含体积零增量，文件几十 KB 封顶）。超过 200 条裁剪最旧的；与最近一条完全相同则跳过（重复取字/连拍不会灌满历史）；读写用命名互斥量跨进程保护（应用与 CLI 并发安全）；坏行跳过、任何失败只记日志，绝不影响取字主流程。
+- **入口**：只有托盘右键菜单的「最近取字」子菜单（最新 15 条，点一条即复制回剪贴板 + 现有轻提示）；**不进主流程、不自动弹出、不新增窗口**——主流程仍然只有「热键 → 框选」两步，托盘子菜单本身就是"零新窗口"的浏览方式。
+- **隐私**：只存本机；设置里可关闭记录；子菜单里可一键清空；文件是明文 JSONL，用户可自行查看和删除。
+- **为什么不做搜索输入框**：任何输入控件都必然是一个新的窗口/弹层，与"不新增打断式 UI"红线冲突；需要检索更早的记录时，用 CLI `--history search`（或 Windows 自带的 `Win+V` 剪贴板历史）。如果后续要加图形搜索，首先需要用户拍板放宽这条红线。
 
 ## 四、并发与线程模型
 

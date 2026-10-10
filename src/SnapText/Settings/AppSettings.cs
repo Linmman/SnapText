@@ -28,4 +28,7 @@ internal sealed class AppSettings
 
     /// <summary>同时保存截图 PNG 到「图片\SnapText」。</summary>
     public bool SaveCapture { get; set; }
+
+    /// <summary>记录取字历史（仅存本机 %LOCALAPPDATA%\SnapText\history.jsonl，最多 200 条）。</summary>
+    public bool SaveHistory { get; set; } = true;
 }

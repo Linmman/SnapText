@@ -64,6 +64,8 @@
                   AutomationProperties.Name="多行合并为一整行" />
         <CheckBox x:Name="SaveCaptureCheck" Content="同时把截图保存为 PNG（图片\SnapText 目录）" Margin="0,8,0,0"
                   AutomationProperties.Name="同时保存截图" />
+        <CheckBox x:Name="SaveHistoryCheck" Content="保存取字历史（仅存本机，最多 200 条；托盘菜单「最近取字」可查看和清空）"
+                  Margin="0,8,0,0" AutomationProperties.Name="保存取字历史" />
         <CheckBox x:Name="AutoStartCheck" Content="开机自动启动" Margin="0,8,0,0"
                   AutomationProperties.Name="开机自动启动" />
 

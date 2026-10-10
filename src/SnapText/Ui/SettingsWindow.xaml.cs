@@ -29,6 +29,7 @@ internal partial class SettingsWindow : Window
         SilentCopyCheck.IsChecked = settings.SilentCopy;
         MergeLinesCheck.IsChecked = settings.MergeLines;
         SaveCaptureCheck.IsChecked = settings.SaveCapture;
+        SaveHistoryCheck.IsChecked = settings.SaveHistory;
         AutoStartCheck.IsChecked = settings.AutoStart;
     }
 
@@ -70,6 +71,7 @@ internal partial class SettingsWindow : Window
         _settings.SilentCopy = SilentCopyCheck.IsChecked == true;
         _settings.MergeLines = MergeLinesCheck.IsChecked == true;
         _settings.SaveCapture = SaveCaptureCheck.IsChecked == true;
+        _settings.SaveHistory = SaveHistoryCheck.IsChecked == true;
         _settings.AutoStart = AutoStartCheck.IsChecked == true;
 
         SettingsStore.Save(_settings);

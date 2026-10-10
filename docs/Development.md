@@ -22,15 +22,15 @@ dotnet publish src\SnapText\SnapText.csproj -c Release -r win-x64 --self-contain
 ```
 src/SnapText/
 ├─ App.xaml(.cs)            启动、单实例、CLI 分流
-├─ Cli/CliRunner.cs         --grab / --grab-region / --ocr / --ocr-burst / --capture / --scan / --qr / --bench
-├─ Core/                    控制器（热键→框选→OCR→剪贴板）、剪贴板服务、IPC 信号、连拍选优
+├─ Cli/CliRunner.cs         --grab / --grab-region / --ocr / --ocr-burst / --capture / --scan / --qr / --history / --bench
+├─ Core/                    控制器（热键→框选→OCR→剪贴板）、剪贴板服务、IPC 信号、连拍选优、取字历史（HistoryStore）
 ├─ Capture/                 冻结截图、显示器枚举（DPI 感知）
 ├─ Overlay/                 多屏覆盖层：框选、遮罩、十字线、尺寸提示
 ├─ Ocr/                     引擎抽象 + PP-OCRv5（RapidOcrNet/ONNX）+ Windows OCR + 选择/回落
 ├─ Processing/              文本净化、链接识别与修复、二维码/条码识别
 ├─ Hotkeys/                 全局热键（RegisterHotKey）+ 解析
 ├─ Settings/                设置持久化（%LOCALAPPDATA%\SnapText\settings.json）+ 开机自启
-├─ Tray/                    托盘图标与菜单
+├─ Tray/                    托盘图标与菜单（含「最近取字」子菜单）
 ├─ Ui/                      轻提示 Toast、结果窗、设置窗
 └─ models/v5/               中文识别模型（rec + dict）；检测/方向模型来自 NuGet 包
 ```
@@ -66,6 +66,7 @@ src/SnapText/
 | 脚本 | 作用 | 环境要求 |
 |---|---|---|
 | `smoke-pipeline.ps1` | 截屏→OCR、区域取字+剪贴板读回、二维码往返、IPC 触发覆盖层 | 内容无关，锁屏也能跑；已有实例时自动跳过相关步骤 |
+| `smoke-history.ps1` | 取字历史的写入/倒序/连续重复跳过/搜索/UTF-8 往返/条数上限裁剪/JSONL 格式/清空/用法退出码/默认存储路径（12 项断言） | 内容无关，锁屏也能跑；用临时文件隔离（`SNAPTEXT_HISTORY_FILE` / `SNAPTEXT_HISTORY_MAX`），可与运行中的实例并存 |
 | `smoke-e2e.ps1` | 交互式全链路：热键 → 覆盖层 → 鼠标拖拽 → 剪贴板 | 需解锁桌面（锁屏会拦截键鼠注入） |
 | `test-hotkey-disable.ps1` | 验证"热键留空 = 关闭"（自动备份/还原配置） | 需先退出正在运行的实例 |
 | `make-*.ps1` | 生成测试素材（文字图 / 连拍帧 / URL 边界用例） | — |
@@ -81,6 +82,10 @@ src/SnapText/
 - ✅ 托盘启动、热键注册、`--grab` IPC → 覆盖层打开
 - ✅ 交互端到端（解锁桌面）：热键 → 覆盖层 → 鼠标拖拽（选区 120,150,1380,410）→ OCR 828ms / conf=0.968 → 剪贴板命中 3/3
 - ✅ 「打开链接」按钮：作者手动验证可用（暂无自动化点击测试）
+- ✅ 取字历史（`tools/smoke-history.ps1`，12 项断言全 PASS）：写入 / 最新在前 / 连续重复跳过 / 搜索命中与未命中 / UTF-8 往返 / 条数上限裁剪 / JSONL 格式 / 清空删文件 / 用法退出码 / 默认存储路径
+- ✅ 取字历史端到端落盘：真实热键 → 框选 → OCR → 剪贴板 后，历史文件新增 1 条（`source=ocr`）；随后同一文本再取一次，历史保持 1 条（去重生效）
+- ✅ GDI+ 并发修复：修复前连续两次 e2e 中 PP-OCR 抛 `Object is currently in use elsewhere` 并静默回落系统 OCR（识别质量下降）；修复后连续两次 e2e 均命中 PP-OCRv5（conf=0.968，无回落）
+- ⏸ 托盘「最近取字」子菜单的**点击复制**：路径简单（点条目 → 写剪贴板 + 轻提示），暂无自动化点击测试，待手动过一遍（与「打开链接」按钮同级别）
 
 ## 六、README 三语同步规则
 

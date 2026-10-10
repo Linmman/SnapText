@@ -28,6 +28,7 @@ internal sealed class SnapTextController : IDisposable
     private readonly AppSettings _settings;
     private readonly HotkeyService _hotkeys = new();
     private readonly OcrService _ocr;
+    private readonly HistoryStore _history = new();
 
     private TrayHost? _tray;
     private OverlayManager? _overlay;
@@ -48,7 +49,10 @@ internal sealed class SnapTextController : IDisposable
 
     public void Start()
     {
-        _tray = new TrayHost(Grab, RepeatLast, GrabBurst, ShowSettings, Exit);
+        _tray = new TrayHost(Grab, RepeatLast, GrabBurst, ShowSettings, Exit,
+            loadHistory: () => _history.Load(),
+            onHistoryItem: CopyHistoryEntry,
+            onHistoryClear: ClearHistory);
         ApplySettings();
         StartSignalListener();
 
@@ -243,7 +247,8 @@ internal sealed class SnapTextController : IDisposable
                 return;
             }
 
-            ShowResult(text, region, isCode: false, lowConfidence: outcome.Confidence is { } c && c < LowConfidenceThreshold);
+            ShowResult(text, region, isCode: false, lowConfidence: outcome.Confidence is { } c && c < LowConfidenceThreshold,
+                source: "burst");
         }
         catch (Exception ex)
         {
@@ -280,8 +285,11 @@ internal sealed class SnapTextController : IDisposable
         {
             var started = Environment.TickCount64;
 
-            // 二维码扫描与 OCR 并行（不额外增加延迟）；框选到码时以码的内容为准
-            var codeTask = Task.Run(() => CodeScanner.TryDecode(image));
+            // 二维码扫描与 OCR 并行（不额外增加延迟）；框选到码时以码的内容为准。
+            // 扫码用克隆位图：GDI+ 位图不是线程安全的，两条路径同时读同一张位图会抛
+            // "Object is currently in use elsewhere"——曾导致 PP-OCR 偶发失败后静默回落到系统 OCR、或二维码偶发识别不到。
+            using var codeImage = (Bitmap)image.Clone();
+            var codeTask = Task.Run(() => CodeScanner.TryDecode(codeImage));
             OcrOutcome? outcome = null;
             Exception? ocrError = null;
             try
@@ -340,15 +348,20 @@ internal sealed class SnapTextController : IDisposable
     }
 
     /// <summary>统一出口：静默复制 + 轻提示（识别到链接时附「打开链接」）；非静默模式弹可编辑结果窗。</summary>
-    private void ShowResult(string text, Rectangle rect, bool isCode, bool lowConfidence = false)
+    private void ShowResult(string text, Rectangle rect, bool isCode, bool lowConfidence = false, string? source = null)
     {
+        var sourceName = source ?? (isCode ? "code" : "ocr");
+
         if (!_settings.SilentCopy)
         {
-            var window = new ResultWindow(text);
+            // 非静默模式：用户可能先编辑再复制，所以等真正复制时再记入历史
+            var window = new ResultWindow(text, onCopied: copied => RecordHistory(copied, sourceName));
             window.Show();
             window.Activate();
             return;
         }
+
+        RecordHistory(text, sourceName);
 
         var url = UrlHelper.FindFirst(text);
         var copied = ClipboardService.TrySetText(text);
@@ -449,6 +462,41 @@ internal sealed class SnapTextController : IDisposable
         catch (Exception ex)
         {
             Log.Error("ShowSettings failed", ex);
+        }
+    }
+
+    /// <summary>托盘「最近取字」：把某条历史复制回剪贴板（复制旧记录不改变历史顺序）。</summary>
+    private void CopyHistoryEntry(HistoryEntry entry)
+    {
+        if (!ClipboardService.TrySetText(entry.Text))
+        {
+            ToastService.Show("复制失败（剪贴板被占用）", "稍后重试即可，记录还在历史里。");
+            return;
+        }
+
+        Log.Info($"History: copied entry ({entry.Text.Length} chars).");
+        ToastService.Show("已复制历史文本", HistoryStore.ToSingleLine(entry.Text));
+    }
+
+    /// <summary>托盘「最近取字 → 清空历史」。</summary>
+    private void ClearHistory()
+    {
+        _history.Clear();
+        ToastService.Show("已清空取字历史", "之后的取字还会继续记录。");
+    }
+
+    /// <summary>把最终交付的文本记入取字历史（设置里可关；失败只记日志，不打扰主流程）。</summary>
+    private void RecordHistory(string text, string source)
+    {
+        try
+        {
+            if (!_settings.SaveHistory) return;
+            if (_history.Add(text, source))
+                Log.Info($"History recorded: {text.Length} chars (source={source}).");
+        }
+        catch (Exception ex)
+        {
+            Log.Error("History record failed", ex);
         }
     }
 
