@@ -33,6 +33,9 @@ internal partial class ToastWindow : Window
             ActionArea.Visibility = Visibility.Visible;
         }
 
+        // 带「打开链接」按钮时多留几秒，否则来不及看清并点击
+        _timer.Interval = TimeSpan.FromMilliseconds(action is null ? 2600 : 6000);
+
         _timer.Tick += (_, _) => FadeOutAndClose();
     }
 
@@ -106,6 +109,7 @@ internal partial class ToastWindow : Window
     {
         e.Handled = true;
         var action = _action;
+        Log.Info("Toast action clicked: " + ActionText.Text);
         FadeOutAndClose();
         action?.Invoke();
     }
