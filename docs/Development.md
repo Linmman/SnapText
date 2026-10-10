@@ -1,4 +1,4 @@
-# 开发与验证
+﻿# 开发与验证
 
 > 面向**维护者与贡献者**的文档。使用者请看 [README](../README.zh-CN.md)；贡献流程见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 > 架构细节见 [Architecture.md](Architecture.md)，发版流程见 [Release.md](Release.md)。
@@ -105,3 +105,5 @@ src/SnapText/
 - 改动用户可见行为时，**先改英文版**，再同步中/日文；
 - 来不及翻译时，在中文/日文版本顶部保留"以英文版为准"的说明即可，不要留半截不一致的内容；
 - 作者向的细节（构建、验证、结构）一律放本文件，不要写回 README。
+- 演示素材（放 `docs/images/`）：静态图 ≤300KB、宽 1200-1440px；**GIF ≤2MB**（宽 900-1000px、10-12fps、3-6 秒；用 ffmpeg 调色板两步法压缩：`fps=12,scale=900:-1,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`）。超过 ~5MB 就别用 GIF——改用 GitHub 附件方式嵌 MP4（在网页版编辑 README，把 mp4 拖进编辑框，会生成可点播的视频链接）。
+- 演示素材只用公开内容；**不要出现聊天记录、邮箱、个人信息**。
