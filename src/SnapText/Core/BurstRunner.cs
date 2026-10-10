@@ -129,15 +129,16 @@ internal static class BurstRunner
         using var smallA = Downscale(a);
         using var smallB = Downscale(b);
 
+        // 一次 LockBits 整块读内存，替代 16×16=256 次 GetPixel（后者每次都要一次内部 LockBits+分配）
+        var bytesA = BitmapPixels.CopyBgra(smallA);
+        var bytesB = BitmapPixels.CopyBgra(smallB);
+
         long diff = 0;
-        for (var y = 0; y < 16; y++)
+        for (var i = 0; i < bytesA.Length; i += 4)
         {
-            for (var x = 0; x < 16; x++)
-            {
-                var pa = smallA.GetPixel(x, y);
-                var pb = smallB.GetPixel(x, y);
-                diff += Math.Abs(pa.R - pb.R) + Math.Abs(pa.G - pb.G) + Math.Abs(pa.B - pb.B);
-            }
+            diff += Math.Abs(bytesA[i] - bytesB[i])
+                  + Math.Abs(bytesA[i + 1] - bytesB[i + 1])
+                  + Math.Abs(bytesA[i + 2] - bytesB[i + 2]);
         }
 
         return diff / (16.0 * 16 * 3) < SameFrameAvgDiff;

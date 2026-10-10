@@ -1,10 +1,8 @@
 ﻿using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 using SnapText.Localization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
-using Windows.Storage.Streams;
 
 namespace SnapText.Ocr;
 
@@ -65,23 +63,17 @@ internal sealed class WindowsOcrEngine : IOcrEngine
 
         using var prepared = OcrPreprocess.Prepare(image);
 
-        using var memory = new MemoryStream();
-        prepared.Save(memory, ImageFormat.Png);
-        var bytes = memory.ToArray();
-
-        using var stream = new InMemoryRandomAccessStream();
-        var writer = new DataWriter(stream);
-        writer.WriteBytes(bytes);
-        await writer.StoreAsync();
-        await writer.FlushAsync();
-        writer.DetachStream();
-        writer.Dispose();
-        stream.Seek(0);
+        // 直接从像素数据构造 SoftwareBitmap（一次内存拷贝），省掉老实现 Save→Decode 的一整轮 PNG 编解码
+        var pixels = BitmapPixels.CopyBgra(prepared);
+        var softwareBitmap = SoftwareBitmap.CreateCopyFromBuffer(
+            pixels.AsBuffer(),
+            BitmapPixelFormat.Bgra8,
+            prepared.Width,
+            prepared.Height,
+            BitmapAlphaMode.Straight);
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        var decoder = await BitmapDecoder.CreateAsync(stream);
-        var softwareBitmap = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
         var result = await engine.RecognizeAsync(softwareBitmap);
 
         cancellationToken.ThrowIfCancellationRequested();

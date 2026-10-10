@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using RapidOcrNet;
 using SkiaSharp;
 using SnapText.Localization;
@@ -55,8 +56,7 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
             cancellationToken.ThrowIfCancellationRequested();
 
             using var prepared = OcrPreprocess.Prepare(image);
-            using var skBitmap = ToSkBitmap(prepared)
-                                 ?? throw new InvalidOperationException(Loc.T("Err_Preprocess"));
+            using var skBitmap = ToSkBitmap(prepared);
 
             lock (_gate)
             {
@@ -130,12 +130,21 @@ internal sealed class PpOcrEngine : IOcrEngine, IDisposable
         }
     }
 
-    private static SKBitmap? ToSkBitmap(Bitmap image)
+    /// <summary>按像素内存布局直接构造 SKBitmap（Format32bppArgb 的内存字节序即 BGRA），省掉老实现 Save→Decode 的一整轮 PNG 编解码。</summary>
+    private static SKBitmap ToSkBitmap(Bitmap image)
     {
-        using var memory = new MemoryStream();
-        image.Save(memory, ImageFormat.Png);
-        memory.Position = 0;
-        return SKBitmap.Decode(memory);
+        try
+        {
+            var info = new SKImageInfo(image.Width, image.Height, SKColorType.Bgra8888, SKAlphaType.Unpremul);
+            var skBitmap = new SKBitmap(info);
+            var pixels = BitmapPixels.CopyBgra(image);
+            Marshal.Copy(pixels, 0, skBitmap.GetPixels(), pixels.Length);
+            return skBitmap;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(Loc.T("Err_Preprocess"), ex);
+        }
     }
 
     public void Dispose()
