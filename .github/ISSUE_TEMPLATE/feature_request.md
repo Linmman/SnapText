@@ -5,6 +5,8 @@ title: '[建议] '
 labels: enhancement
 ---
 
+<!-- English is welcome too — feel free to write this in English. -->
+
 **你遇到的场景**
 先讲场景，不用急着讲方案（例如："看剧时想把台词存下来，但……"）。
 

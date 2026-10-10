@@ -5,6 +5,8 @@ title: '[Bug] '
 labels: bug
 ---
 
+<!-- English is welcome too — feel free to write this in English. -->
+
 <!-- 提交前请先看 docs/Troubleshooting.md，很多问题那里已有答案 -->
 
 **问题描述**

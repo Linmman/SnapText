@@ -104,6 +104,14 @@ internal partial class ToastWindow : Window
 
     private void OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e) => FadeOutAndClose();
 
+    /// <summary>点右上角 ✕：立即收起提示（提示可能挡住屏幕内容）。</summary>
+    private void OnCloseButtonClick(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+        Log.Info("Toast dismissed by user.");
+        FadeOutAndClose();
+    }
+
     /// <summary>点「打开链接」：先关提示，再执行动作（Handled 防止冒泡触发"点击关闭"）。</summary>
     private void OnActionClick(object sender, MouseButtonEventArgs e)
     {
