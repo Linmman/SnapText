@@ -1,4 +1,4 @@
-﻿# SnapText — grab any text on screen
+# SnapText — grab any text on screen
 
 ![platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D6?logo=windows)
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)

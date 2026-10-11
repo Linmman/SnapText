@@ -1,11 +1,11 @@
-﻿# 开发与验证
+# 开发与验证
 
 > 面向**维护者与贡献者**的文档。使用者请看 [README](../README.zh-CN.md)；贡献流程见 [CONTRIBUTING.md](../CONTRIBUTING.md)。
 > 架构细节见 [Architecture.md](Architecture.md)，发版流程见 [Release.md](Release.md)。
 
 ## 一、环境与构建
 
-需要 .NET 10 SDK（本项目开发机上装在用户目录：`%USERPROFILE%\.dotnet`，不污染系统目录）。
+需要 .NET 10 SDK。没有管理员权限时，可把 SDK 装在用户目录 `%USERPROFILE%\.dotnet`（设置 `DOTNET_ROOT` 与 `PATH` 即可，见下）。
 
 ```powershell
 $env:DOTNET_ROOT = "$env:USERPROFILE\.dotnet"; $env:PATH = "$env:USERPROFILE\.dotnet;$env:PATH"
@@ -80,7 +80,7 @@ src/SnapText/
 | `make-*.ps1` | 生成测试素材（文字图 / 连拍帧 / URL 边界用例） | — |
 | `diag-input.ps1` | 诊断环境是否允许注入键鼠（锁屏/远程环境常见限制） | — |
 
-已通过的验证（2026-10-10）：
+已通过的验证记录：
 
 - ✅ 截屏（全屏/区域）→ OCR 全链路（从真实屏幕读出 803 字符）
 - ✅ `--grab-region`；剪贴板写入 + **读回校验一致**
@@ -90,14 +90,14 @@ src/SnapText/
 - ✅ 自适应取字（`tools/smoke-adaptive.ps1`，4/4 PASS）：静止画面 frames=2/ocr=1（conf≈0.999）；画面在动 frames=6/ocr=5、约 1.8 秒选中最优帧；`--no-copy` 不碰剪贴板
 - ✅ 托盘启动、热键注册、`--grab` IPC → 覆盖层打开
 - ✅ 交互端到端（解锁桌面）：热键 → 覆盖层 → 鼠标拖拽（选区 120,150,1380,410）→ OCR 828ms / conf=0.968 → 剪贴板命中 3/3
-- ✅ 「打开链接」按钮：作者手动验证可用（暂无自动化点击测试）
+- ✅ 「打开链接」按钮：人工验证可用（暂无自动化点击测试）
 - ✅ 取字历史（`tools/smoke-history.ps1`，12 项断言全 PASS）：写入 / 最新在前 / 连续重复跳过 / 搜索命中与未命中 / UTF-8 往返 / 条数上限裁剪 / JSONL 格式 / 清空删文件 / 用法退出码 / 默认存储路径
 - ✅ 取字历史端到端落盘：真实热键 → 框选 → OCR → 剪贴板 后，历史文件新增 1 条（`source=ocr`）；随后同一文本再取一次，历史保持 1 条（去重生效）
 - ✅ GDI+ 并发修复：修复前连续两次 e2e 中 PP-OCR 抛 `Object is currently in use elsewhere` 并静默回落系统 OCR（识别质量下降）；修复后连续两次 e2e 均命中 PP-OCRv5（conf=0.968，无回落）
-- ⏸ 托盘「最近取字」子菜单的**点击复制**、以及「搜索历史…」面板的点击/输入：路径简单（点条目 → 写剪贴板 + 轻提示），暂无自动化点击测试，待手动过一遍（与「打开链接」按钮同级别）
+- ✅ 托盘「最近取字」子菜单的**点击复制**、以及「搜索历史…」面板：UIA 自动化实测——托盘右键菜单展开子菜单、点历史条目后剪贴板命中该条；搜索面板打开、搜索框可输入；日文界面下复测同样通过
 - ✅ 托盘/exe 图标改为嵌入 `SnapText.ico` 资源：exe 图标 `ExtractAssociatedIcon` 提取渲染一致；托盘实测——启动新构建后日志 `Tray icon created.`、UIA 枚举到 `SystemTray.NormalButton "SnapText · 屏幕取字"`，屏上放大截图为蓝底白「字」（与设计一致）
 - ✅ 界面语言（`tools/smoke-loc.ps1`，8/8 PASS）：三语言文案表键集合一致（117 键 × 3 语言）；CLI 输出随 `SNAPTEXT_LANG` 切换且三种语言互不相同；zh/ja/en 各启动一次应用，日志均无 `Missing UI string`、托盘创建成功
-- ⏸ 设置窗口「界面语言」下拉选择与"保存后即时切换"：UI 交互无自动化测试，待手动过一遍（语言解析与 CLI 同源，已被上面的脚本覆盖）
+- ✅ 设置窗口「界面语言」下拉与"保存后即时切换"：UIA 自动化实测——选「日本語」保存后 settings.json 持久化为 ja，托盘提示与新开窗口标题即时切换，历史搜索面板在日文界面下可用；随后还原「跟随系统」
 
 ## 六、README 三语同步规则
 
@@ -105,6 +105,6 @@ src/SnapText/
 
 - 改动用户可见行为时，**先改英文版**，再同步中/日文；
 - 来不及翻译时，在中文/日文版本顶部保留"以英文版为准"的说明即可，不要留半截不一致的内容；
-- 作者向的细节（构建、验证、结构）一律放本文件，不要写回 README。
+- 面向维护者/贡献者的细节（构建、验证、结构）一律放本文件，不要写回 README。
 - 演示素材（放 `docs/images/`）：整屏截图 ≤300KB、宽 1200-1440px；**局部 UI 元素截图（如提示条）按元素实际尺寸出图、≤300KB**；**GIF ≤2MB**（宽 900-1000px、10-12fps、3-6 秒；用 ffmpeg 调色板两步法压缩：`fps=12,scale=900:-1,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse`）。超过 ~5MB 就别用 GIF——改用 GitHub 附件方式嵌 MP4（在网页版编辑 README，把 mp4 拖进编辑框，会生成可点播的视频链接）。
 - 演示素材只用公开内容；**不要出现聊天记录、邮箱、个人信息**。
