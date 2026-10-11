@@ -36,6 +36,8 @@ src/SnapText/
 └─ models/v5/               中文识别模型（rec + dict）；检测/方向模型来自 NuGet 包
 ```
 
+测试工程在 `tests/SnapText.Tests/`（单元测试，见下文）；`tools/` 为验证脚本与素材/图标/预览图生成脚本。
+
 运行时数据：日志 `%LOCALAPPDATA%\SnapText\logs\`，配置 `%LOCALAPPDATA%\SnapText\settings.json`，可选截图 `图片\SnapText\`。
 
 ## 三、设计红线（决定"什么不做"）
@@ -79,7 +81,7 @@ src/SnapText/
 | `smoke-adaptive.ps1` | 自适应取字：静止画面走单帧快路径（frames=2/ocr=1）、画面在动走多帧选优（frames=6/ocr≥2 且结果正确） | 需解锁桌面（会显示一个小测试窗口，不注入键鼠、不写剪贴板）；可与运行中的实例并存 |
 | `smoke-e2e.ps1` | 交互式全链路：热键 → 覆盖层 → 鼠标拖拽 → 剪贴板 | 需解锁桌面（锁屏会拦截键鼠注入）**且需先退出正在运行的 SnapText**（检测到已有实例会自动 SKIP，不接管用户实例） |
 | `test-hotkey-disable.ps1` | 验证"热键留空 = 关闭"（自动备份/还原配置） | 需先退出正在运行的实例 |
-| `make-*.ps1` | 生成测试素材（文字图 / 连拍帧 / URL 边界用例）；`make-icon.ps1` 重新生成应用图标 `src/SnapText/SnapText.ico`（16/32/48=DIB、256=PNG） | — |
+| `make-*.ps1` | 生成测试素材（文字图 / 连拍帧 / URL 边界用例）；`make-icon.ps1` 重新生成应用图标 `src/SnapText/SnapText.ico`（16/32/48=DIB、256=PNG）；`make-social.ps1` 重新生成社交预览图 `docs/images/social-preview.png`（1280×640） | — |
 | `diag-input.ps1` | 诊断环境是否允许注入键鼠（锁屏/远程环境常见限制） | — |
 
 已通过的验证记录：

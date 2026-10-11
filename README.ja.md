@@ -4,6 +4,7 @@
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
 ![OCR](https://img.shields.io/badge/OCR-PP--OCRv5%20%2B%20Windows-2E7D32)
 ![license](https://img.shields.io/badge/license-MIT-yellow)
+[![CI](https://github.com/Linmman/SnapText/actions/workflows/ci.yml/badge.svg)](https://github.com/Linmman/SnapText/actions/workflows/ci.yml)
 
 [English](README.md) | [简体中文](README.zh-CN.md) | **日本語**
 
@@ -100,7 +101,7 @@ SnapText.exe --history clear                               # 取得履歴を消�
 ## 開発に参加する
 
 issue も PR も歓迎です。ビルド方法・テストスクリプト・3 つの設計ルールは **[CONTRIBUTING.md](CONTRIBUTING.md)** と **[docs/Development.md](docs/Development.md)** を参照してください（要約：手順を増やさない、新しいウィンドウを出さない、設定なしで動く）。
-開発者向けドキュメントは現在中国語です。英語での issue / PR はまったく問題ありません。
+開発者向けドキュメントは現在中国語です。英語での issue / PR はまったく問題ありません。機能のアイデアや雑談は [Discussions](https://github.com/Linmman/SnapText/discussions) へどうぞ。
 
 ## ライセンス
 

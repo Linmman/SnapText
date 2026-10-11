@@ -4,6 +4,7 @@
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
 ![OCR](https://img.shields.io/badge/OCR-PP--OCRv5%20%2B%20Windows-2E7D32)
 ![license](https://img.shields.io/badge/license-MIT-yellow)
+[![CI](https://github.com/Linmman/SnapText/actions/workflows/ci.yml/badge.svg)](https://github.com/Linmman/SnapText/actions/workflows/ci.yml)
 
 [English](README.md) | **简体中文** | [日本語](README.ja.md)
 
@@ -100,7 +101,7 @@ SnapText.exe --history clear                               # 清空取字历史
 ## 参与开发
 
 欢迎提 issue 和 PR —— 构建方法、测试脚本和项目的三条设计红线见 **[CONTRIBUTING.md](CONTRIBUTING.md)** 与 **[docs/Development.md](docs/Development.md)**（简短版：不多一步操作、不弹新窗口、零配置可用）。
-开发者文档目前是中文；用英文提 issue / PR 完全没问题。
+开发者文档目前是中文；用英文提 issue / PR 完全没问题。功能想法与一般讨论也欢迎发 [Discussions](https://github.com/Linmman/SnapText/discussions)。
 
 ## 许可
 

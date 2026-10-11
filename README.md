@@ -4,6 +4,7 @@
 ![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)
 ![OCR](https://img.shields.io/badge/OCR-PP--OCRv5%20%2B%20Windows-2E7D32)
 ![license](https://img.shields.io/badge/license-MIT-yellow)
+[![CI](https://github.com/Linmman/SnapText/actions/workflows/ci.yml/badge.svg)](https://github.com/Linmman/SnapText/actions/workflows/ci.yml)
 
 **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
@@ -100,7 +101,7 @@ See **[docs/Troubleshooting.md](docs/Troubleshooting.md)** (Chinese) — it cove
 ## Contributing
 
 Ideas and PRs are welcome — see **[CONTRIBUTING.md](CONTRIBUTING.md)** and **[docs/Development.md](docs/Development.md)** for the build, the test scripts and the project's three design rules (short version: no extra steps, no new windows, works with zero configuration).
-Developer docs are currently in Chinese; issues and PRs in English are perfectly fine.
+Developer docs are currently in Chinese; issues and PRs in English are perfectly fine. For questions and feature ideas, [Discussions](https://github.com/Linmman/SnapText/discussions) is a good place too.
 
 ## License
 
