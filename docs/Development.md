@@ -67,6 +67,8 @@ src/SnapText/
 
 ## 五、验证记录
 
+单元测试：`dotnet test tests/SnapText.Tests/SnapText.Tests.csproj -c Release`（64 个用例：UrlHelper 边界、PostProcessor 净化/合行、热键解析全分支、选帧打分、文案表一致性、历史增删与计数；内容无关、任何环境可跑，CI 已接入）。
+
 自动化脚本（`tools/`）：
 
 | 脚本 | 作用 | 环境要求 |
@@ -77,7 +79,7 @@ src/SnapText/
 | `smoke-adaptive.ps1` | 自适应取字：静止画面走单帧快路径（frames=2/ocr=1）、画面在动走多帧选优（frames=6/ocr≥2 且结果正确） | 需解锁桌面（会显示一个小测试窗口，不注入键鼠、不写剪贴板）；可与运行中的实例并存 |
 | `smoke-e2e.ps1` | 交互式全链路：热键 → 覆盖层 → 鼠标拖拽 → 剪贴板 | 需解锁桌面（锁屏会拦截键鼠注入）**且需先退出正在运行的 SnapText**（检测到已有实例会自动 SKIP，不接管用户实例） |
 | `test-hotkey-disable.ps1` | 验证"热键留空 = 关闭"（自动备份/还原配置） | 需先退出正在运行的实例 |
-| `make-*.ps1` | 生成测试素材（文字图 / 连拍帧 / URL 边界用例） | — |
+| `make-*.ps1` | 生成测试素材（文字图 / 连拍帧 / URL 边界用例）；`make-icon.ps1` 重新生成应用图标 `src/SnapText/SnapText.ico`（16/32/48=DIB、256=PNG） | — |
 | `diag-input.ps1` | 诊断环境是否允许注入键鼠（锁屏/远程环境常见限制） | — |
 
 已通过的验证记录：

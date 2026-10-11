@@ -33,10 +33,11 @@ If your suggestion needs a new setting or an extra step, explain why it is worth
 
 ```powershell
 dotnet build   src\SnapText\SnapText.csproj -c Release
+dotnet test    tests\SnapText.Tests\SnapText.Tests.csproj -c Release
 powershell -NoProfile -ExecutionPolicy Bypass -File tools\smoke-pipeline.ps1   # content-agnostic smoke test
 ```
 
-Requires the .NET 10 SDK. `docs/Development.md` lists every test script and what it needs (some require an unlocked desktop). Please run `smoke-pipeline.ps1` before opening a PR and paste the result in the description.
+Requires the .NET 10 SDK. CI runs the build, the unit tests and the three-language check on every push. `docs/Development.md` lists every test script and what it needs (some require an unlocked desktop). Please run `dotnet test` and `smoke-pipeline.ps1` before opening a PR and paste the results in the description.
 
 ## Code style
 
