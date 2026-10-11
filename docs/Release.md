@@ -27,7 +27,7 @@ dotnet publish src/SnapText/SnapText.csproj -c Release -r win-x64 --self-contain
 Compress-Archive -Path dist/SnapText/* -DestinationPath dist/SnapText-vX.Y.Z-win-x64.zip -Force
 
 # 生成校验和（写进 Release 说明，便于用户核对）
-certutil -hashfile dist/SnapText-v0.1.0-win-x64.zip SHA256
+certutil -hashfile dist/SnapText-vX.Y.Z-win-x64.zip SHA256
 ```
 
 **注意：**
@@ -80,7 +80,7 @@ git push origin main --tags
 
 1. 打开 `https://github.com/<你的用户名>/SnapText/releases/new`；
 2. 选择刚推送的 tag（或新建同名 tag），标题填 `vX.Y.Z`，贴入上面的说明模板（替换版本号与 SHA256）；
-3. 上传 `dist/SnapText-v0.1.0-win-x64.zip`；
+3. 上传 `dist/SnapText-vX.Y.Z-win-x64.zip`；
 4. 发布。
 
 > 本机没有 `gh` CLI：可用 GitHub API 创建 Release 并上传附件（token 来自本机 git 凭据管理器；注意不要把 token 写进任何文件或命令输出）。
@@ -94,5 +94,5 @@ git push origin main --tags
 ## 可选（以后需要再加）
 
 - **代码签名**：开源项目可申请 [SignPath](https://signpath.io/) 免费签名，减少 SmartScreen 警告；
-- **CI**：GitHub Actions（`windows-latest` + `dotnet 10`）跑构建与 `smoke-pipeline.ps1`；
+- **把 smoke 脚本纳入 CI**：仓库已有 `ci.yml`（构建 + 单元测试 + 三语校验）；smoke 脚本依赖真实桌面，如需纳入要自托管 runner；
 - **自动更新**：检查 Releases 最新版本并提示（参考 Zshot/opensnap 的实现）。
