@@ -27,6 +27,10 @@ public partial class App : Application
         // 最早的界面语言初始化：CLI 输出、启动失败提示等都用它（SNAPTEXT_LANG 可强制）
         Loc.Initialize(SettingsStore.Load().Language);
 
+        // CLI 模式把日志同步输出到 stderr（脚本/CI 排查用）；GUI 启动不输出，避免污染控制台
+        if (e.Args.Length > 0)
+            Log.EnableStdout();
+
         // 无界面模式（--ocr / --capture / --version）：即使已有实例在运行也可执行
         if (CliRunner.TryRun(e.Args, out var exitCode))
         {
