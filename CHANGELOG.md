@@ -5,7 +5,7 @@
 ## [Unreleased]
 
 ### 新增
-- **xUnit 单元测试工程**（`tests/SnapText.Tests`，61 个用例）与 CI workflow（`.github/workflows/ci.yml`：构建 + 测试 + 三语校验）；覆盖 UrlHelper 边界、PostProcessor 净化/合行、热键解析全部分支、选帧打分与三语文案表一致性
+- **xUnit 单元测试工程**（`tests/SnapText.Tests`，64 个用例）与 CI workflow（`.github/workflows/ci.yml`：构建 + 测试 + 三语校验）；覆盖 UrlHelper 边界、PostProcessor 净化/合行、热键解析全部分支、选帧打分与三语文案表一致性
 - CLI `--help` / `-h`：输出全部子命令与常用选项（三语文案）
 - **应用图标**：exe 与托盘共用一份嵌入的 `SnapText.ico`（`tools/make-icon.ps1` 生成），托盘不再运行时画字
 - `SECURITY.md` 安全策略与漏洞报告渠道
