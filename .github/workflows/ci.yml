@@ -23,6 +23,7 @@ jobs:
       - name: Test
         run: dotnet test tests/SnapText.Tests/SnapText.Tests.csproj -c Release
 
-      # 三语文案键集合一致性（ smoke-loc 依赖解锁桌面？否——纯内存校验，可在 CI 跑）
+      # 三语文案键集合一致性（纯内存校验，无需桌面）。
+      # 注意必须直跑构建产物：dotnet run 拉起 WinExe 时 AttachConsole 接不上输出，步骤会 0 字节
       - name: Loc check
-        run: dotnet run --project src/SnapText/SnapText.csproj -c Release -- --loc check
+        run: .\src\SnapText\bin\Release\net10.0-windows10.0.19041.0\SnapText.exe --loc check
